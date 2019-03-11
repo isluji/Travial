@@ -9,6 +9,11 @@ public class TriviaQuestion {
 
     private ArrayList<TriviaAnswer> answers;
 
+    public TriviaQuestion(String statement, int score) {
+        this.statement = statement;
+        this.score = score;
+    }
+
     public int getScore() {
         return score;
     }
