@@ -10,8 +10,13 @@ public class TriviaQuestion {
     private ArrayList<TriviaAnswer> answers;
 
     public TriviaQuestion(String statement, int score) {
+        this.answers = new ArrayList<>();
         this.statement = statement;
         this.score = score;
+    }
+
+    public String getStatement() {
+        return statement;
     }
 
     public int getScore() {
@@ -19,6 +24,10 @@ public class TriviaQuestion {
     }
 
     // -----------------------------------
+
+    public void addAnswer(TriviaAnswer answer) {
+        answers.add(answer);
+    }
 
     public TriviaAnswer getCorrectAnswer() {
         TriviaAnswer correctAnswer = null;

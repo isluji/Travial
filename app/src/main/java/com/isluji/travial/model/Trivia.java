@@ -12,6 +12,7 @@ public class Trivia {
     private ArrayList<TriviaQuestion> questions;
 
     public Trivia(String title, int difficulty, int passingScore) {
+        this.questions = new ArrayList<>();
         this.title = title;
         this.difficulty = difficulty;
         this.passingScore = passingScore;
@@ -33,7 +34,15 @@ public class Trivia {
         return relatedPoi;
     }
 
+    public ArrayList<TriviaQuestion> getQuestions() {
+        return questions;
+    }
+
     // ---------------------------------------------
+
+    public void addQuestion(TriviaQuestion question) {
+        questions.add(question);
+    }
 
     public int getMaxScore() {
         int maxScore = 0;
