@@ -23,14 +23,17 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.isluji.travial.R;
 import com.isluji.travial.fragments.MapsFragment;
+import com.isluji.travial.fragments.QuestionFragment;
 import com.isluji.travial.fragments.TriviaFragment;
 import com.isluji.travial.model.Trivia;
+import com.isluji.travial.model.TriviaQuestion;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,
-        TriviaFragment.OnListFragmentInteractionListener {
+        TriviaFragment.OnListFragmentInteractionListener,
+        QuestionFragment.OnListFragmentInteractionListener {
 
     final int PERMISSION_LOCATION = 111;
 
@@ -194,7 +197,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(Trivia item) {
-        Log.v("triviaList", "He pulsado " + item.getTitle());
+    public void onListFragmentInteraction(Trivia trivia) {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.app_bar_main, new QuestionFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onListFragmentInteraction(TriviaQuestion question) {
+        Log.v("questionList", "He pulsado " + question.getStatement());
     }
 }
