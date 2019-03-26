@@ -9,13 +9,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.isluji.travial.R;
+import com.isluji.travial.dummy.DummyContent;
 import com.isluji.travial.fragments.TriviaFragment.OnListFragmentInteractionListener;
 import com.isluji.travial.model.Trivia;
 
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link DummyContent.DummyItem} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
@@ -45,7 +46,7 @@ public class MyTriviaRecyclerViewAdapter extends RecyclerView.Adapter<MyTriviaRe
 
         Resources res = Resources.getSystem();
         int resId = res.getIdentifier(
-                holder.mTrivia.getRelatedPoi().getImage(),
+                "mipmap-hdpi/ic_launcher.png",
                 "drawable",
                 getClass().getPackage().getName());
         holder.mRelatedPoiView.setImageResource(resId);
@@ -87,7 +88,7 @@ public class MyTriviaRecyclerViewAdapter extends RecyclerView.Adapter<MyTriviaRe
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mDifficultyView.getText() + "'";
+            return super.toString() + " '" + mTitleView.getText() + "'";
         }
     }
 }

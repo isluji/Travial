@@ -69,7 +69,7 @@ public class TriviaFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
 
-            recyclerView.setAdapter(new MyTriviaRecyclerViewAdapter(DummyContent.ITEMS_T, mListener));
+            recyclerView.setAdapter(new MyTriviaRecyclerViewAdapter(DummyContent.TRIVIAS, mListener));
         }
 
         return view;
@@ -104,6 +104,6 @@ public class TriviaFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(Trivia item);
+        void onListFragmentInteraction(Trivia trivia);
     }
 }
