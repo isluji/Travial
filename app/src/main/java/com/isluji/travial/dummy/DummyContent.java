@@ -1,6 +1,6 @@
 package com.isluji.travial.dummy;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.isluji.travial.model.Trivia;
 import com.isluji.travial.model.TriviaAnswer;
