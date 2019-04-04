@@ -33,15 +33,15 @@ public class DummyContent {
 
         // Create sample Trivia items
         for (int i = 1; i <= COUNT; i++) {
-            Trivia t = new Trivia("Trivia " + i, i, i);
+            Trivia t = new Trivia(/* TODO */);
 
             // Add sample Questions to the Trivias
             for (int j = 1; j <= COUNT; j++) {
-                TriviaQuestion tq = new TriviaQuestion("Question " + j, j);
+                TriviaQuestion tq = new TriviaQuestion(/* TODO */);
                 // Add sample Answers to the Questions
                 for (int k = 1; k <= COUNT; k++) {
                     boolean correct = (k % 2 == 0);
-                    TriviaAnswer ta = new TriviaAnswer("Answer " + k, correct);
+                    TriviaAnswer ta = new TriviaAnswer(/* TODO */);
                     tq.addAnswer(ta);
                 }
 
