@@ -1,5 +1,7 @@
 package com.isluji.travial.model;
 
+import com.isluji.travial.enums.PoiType;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Embedded;
@@ -33,9 +35,17 @@ public class PointOfInterest {
     private PoiLocation location;
 
 
-    public PointOfInterest() {
+    public PointOfInterest(@NonNull String name, PoiType type, String author,
+                           int finishingYear, boolean openToPublic,
+                           String image, PoiLocation location) {
+        this.name = name;
+        this.type = type;
+        this.author = author;
+        this.finishingYear = finishingYear;
+        this.openToPublic = openToPublic;
+        this.image = image;
+        this.location = location;
     }
-
 
     /** Getters and setters */
 

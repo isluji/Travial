@@ -2,6 +2,7 @@ package com.isluji.travial.dummy;
 
 import androidx.annotation.NonNull;
 
+import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.model.Trivia;
 import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestion;
@@ -33,19 +34,19 @@ public class DummyContent {
 
         // Create sample Trivia items
         for (int i = 1; i <= COUNT; i++) {
-            Trivia t = new Trivia(/* TODO */);
+            Trivia t = new Trivia("Trivia" + i, TriviaDifficulty.MEDIUM, 5, 1);
 
             // Add sample Questions to the Trivias
             for (int j = 1; j <= COUNT; j++) {
-                TriviaQuestion tq = new TriviaQuestion(/* TODO */);
+                TriviaQuestion tq = new TriviaQuestion("Question" + i, 2, 1);
                 // Add sample Answers to the Questions
                 for (int k = 1; k <= COUNT; k++) {
                     boolean correct = (k % 2 == 0);
-                    TriviaAnswer ta = new TriviaAnswer(/* TODO */);
-                    tq.addAnswer(ta);
+                    TriviaAnswer ta = new TriviaAnswer("Answer" + i, correct, 1);
+//                    tq.addAnswer(ta);
                 }
 
-                t.addQuestion(tq);
+//                t.addQuestion(tq);
             }
 
             TRIVIAS.add(t);

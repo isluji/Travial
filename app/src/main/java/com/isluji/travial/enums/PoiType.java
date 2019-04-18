@@ -1,4 +1,4 @@
-package com.isluji.travial.model;
+package com.isluji.travial.enums;
 
 public enum PoiType {
     MONUMENT, MUSEUM, BUILDING, SCULPTURE, SQUARE, GARDEN,

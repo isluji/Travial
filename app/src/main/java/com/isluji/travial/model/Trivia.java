@@ -1,5 +1,7 @@
 package com.isluji.travial.model;
 
+import com.isluji.travial.enums.TriviaDifficulty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
@@ -21,23 +22,27 @@ public class Trivia {
     @NonNull
     private String title;
 
-    // TODO: If it's null, we'll set the 'medium' difficulty
-    private int difficulty;
+    // TODO: If it's null, we'll set it as MEDIUM
+    private TriviaDifficulty difficulty;
 
     // TODO: If it's null, we'll set it as (maxScore / 2)
     @ColumnInfo(name = "passing_score")
-    private int passingScore;
+    private double passingScore;
 
     // Foreign key from PointOfInterest
     @ColumnInfo(name = "poi_id", index = true)
     private int poiId;
 
 
-    public Trivia() {
+    public Trivia(@NonNull String title, TriviaDifficulty difficulty, double passingScore, int poiId) {
+        this.title = title;
+        this.difficulty = difficulty;
+        this.passingScore = passingScore;
+        this.poiId = poiId;
     }
 
 
-    /** Getters and setters */
+    /* ******** Getters and setters ******** */
 
     public int getId() {
         return id;
@@ -56,19 +61,19 @@ public class Trivia {
         this.title = title;
     }
 
-    public int getDifficulty() {
+    public TriviaDifficulty getDifficulty() {
         return difficulty;
     }
 
-    public void setDifficulty(int difficulty) {
+    public void setDifficulty(TriviaDifficulty difficulty) {
         this.difficulty = difficulty;
     }
 
-    public int getPassingScore() {
+    public double getPassingScore() {
         return passingScore;
     }
 
-    public void setPassingScore(int passingScore) {
+    public void setPassingScore(double passingScore) {
         this.passingScore = passingScore;
     }
 
@@ -80,30 +85,13 @@ public class Trivia {
         this.poiId = poiId;
     }
 
-
-    /** Implemented methods */
-
-    public void addQuestion(TriviaQuestion question) {
-//        questions.add(question);
-    }
-
-    public int getMaxScore() {
-        int maxScore = 0;
-
-//        for (TriviaQuestion q: questions) {
-//            maxScore += q.getScore();
-//        }
-
-        return maxScore;
-    }
-
     public List<TriviaQuestion> getQuestions() {
-        return new ArrayList<>();   // TODO
+        return new ArrayList<>();
     }
 }
 
 
-// POJO to include OneToMany Relation with TriviaQuestion
+/** POJO to include OneToMany Relation with TriviaQuestion */
 class TriviaWithQuestions {
 
     private int id;
@@ -112,5 +100,18 @@ class TriviaWithQuestions {
     private List<TriviaQuestion> questions;
 
     public TriviaWithQuestions() {
+    }
+
+
+    /* *** Implemented methods *** */
+
+    public double getMaxScore() {
+        int maxScore = 0;
+
+        for (TriviaQuestion q: questions) {
+            maxScore += q.getScore();
+        }
+
+        return maxScore;
     }
 }

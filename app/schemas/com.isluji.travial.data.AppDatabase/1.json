@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "c9f2b3b8579deaec13ee0b47ec98ca8a",
+    "identityHash": "e08f377c45a781cb13b34ca6d55a9f4e",
     "entities": [
       {
         "tableName": "User",
@@ -124,7 +124,7 @@
       },
       {
         "tableName": "Trivia",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `passing_score` INTEGER NOT NULL, `poi_id` INTEGER NOT NULL, FOREIGN KEY(`poi_id`) REFERENCES `PointOfInterest`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `difficulty` TEXT, `passing_score` REAL NOT NULL, `poi_id` INTEGER NOT NULL, FOREIGN KEY(`poi_id`) REFERENCES `PointOfInterest`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -141,13 +141,13 @@
           {
             "fieldPath": "difficulty",
             "columnName": "difficulty",
-            "affinity": "INTEGER",
-            "notNull": true
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "passingScore",
             "columnName": "passing_score",
-            "affinity": "INTEGER",
+            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -189,7 +189,7 @@
       },
       {
         "tableName": "TriviaQuestion",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `statement` TEXT NOT NULL, `score` INTEGER NOT NULL, `trivia_id` INTEGER NOT NULL, FOREIGN KEY(`trivia_id`) REFERENCES `Trivia`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `statement` TEXT NOT NULL, `score` REAL NOT NULL, `trivia_id` INTEGER NOT NULL, FOREIGN KEY(`trivia_id`) REFERENCES `Trivia`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -206,7 +206,7 @@
           {
             "fieldPath": "score",
             "columnName": "score",
-            "affinity": "INTEGER",
+            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -393,7 +393,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"c9f2b3b8579deaec13ee0b47ec98ca8a\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"e08f377c45a781cb13b34ca6d55a9f4e\")"
     ]
   }
 }

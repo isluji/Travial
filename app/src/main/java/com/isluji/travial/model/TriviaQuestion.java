@@ -1,6 +1,5 @@
 package com.isluji.travial.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -20,18 +19,21 @@ public class TriviaQuestion {
     @NonNull
     private String statement;
 
-    private int score;
+    private double score;
 
     // Foreign key from Trivia
     @ColumnInfo(name = "trivia_id", index = true)
     private int triviaId;
 
 
-    public TriviaQuestion() {
+    public TriviaQuestion(@NonNull String statement, double score, int triviaId) {
+        this.statement = statement;
+        this.score = score;
+        this.triviaId = triviaId;
     }
 
 
-    /** Getters and setters */
+    /* ******** Getters and setters ******** */
 
     public int getId() {
         return id;
@@ -50,11 +52,11 @@ public class TriviaQuestion {
         this.statement = statement;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         this.score = score;
     }
 
@@ -65,29 +67,10 @@ public class TriviaQuestion {
     public void setTriviaId(int triviaId) {
         this.triviaId = triviaId;
     }
-
-
-    /** Implemented methods */
-
-    public void addAnswer(TriviaAnswer answer) {
-//        answers.add(answer);
-    }
-
-    public TriviaAnswer getCorrectAnswer() {
-        TriviaAnswer correctAnswer = null;
-
-//        for (TriviaAnswer a: answers) {
-//            if (a.isCorrect()) {
-//                correctAnswer = a;
-//            }
-//        }
-
-        return correctAnswer;
-    }
 }
 
 
-// POJO to include OneToMany Relation with TriviaAnswer
+/** POJO to include OneToMany Relation with TriviaAnswer */
 class TriviaQuestionWithAnswers {
 
     private int id;
@@ -96,5 +79,20 @@ class TriviaQuestionWithAnswers {
     private List<TriviaAnswer> answers;
 
     public TriviaQuestionWithAnswers() {
+    }
+
+
+    /* *** Implemented methods *** */
+
+    public TriviaAnswer getCorrectAnswer() {
+        TriviaAnswer correctAnswer = null;
+
+        for (TriviaAnswer a: answers) {
+            if (a.isCorrect()) {
+                correctAnswer = a;
+            }
+        }
+
+        return correctAnswer;
     }
 }

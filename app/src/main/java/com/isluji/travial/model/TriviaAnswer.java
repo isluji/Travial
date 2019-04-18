@@ -24,11 +24,14 @@ public class TriviaAnswer {
     private int questionId;
 
 
-    public TriviaAnswer() {
+    public TriviaAnswer(@NonNull String text, boolean correct, int questionId) {
+        this.text = text;
+        this.correct = correct;
+        this.questionId = questionId;
     }
 
 
-    /** Getters and setters */
+    /* ******** Getters and setters ******** */
 
     public int getId() {
         return id;
