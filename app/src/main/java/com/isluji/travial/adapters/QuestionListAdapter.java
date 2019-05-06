@@ -1,4 +1,4 @@
-package com.isluji.travial.fragments;
+package com.isluji.travial.adapters;
 
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,12 +19,12 @@ import java.util.List;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyQuestionRecyclerViewAdapter extends RecyclerView.Adapter<MyQuestionRecyclerViewAdapter.ViewHolder> {
+public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapter.ViewHolder> {
 
     private final List<TriviaQuestion> mQuestionList;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyQuestionRecyclerViewAdapter(List<TriviaQuestion> items, OnListFragmentInteractionListener listener) {
+    public QuestionListAdapter(List<TriviaQuestion> items, OnListFragmentInteractionListener listener) {
         mQuestionList = items;
         mListener = listener;
     }
