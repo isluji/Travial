@@ -1,32 +1,40 @@
 package com.isluji.travial.activities;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.isluji.travial.R;
+import com.isluji.travial.data.AppDatabase;
+import com.isluji.travial.data.AppViewModel;
 import com.isluji.travial.fragments.MapsFragment;
 import com.isluji.travial.fragments.QuestionFragment;
 import com.isluji.travial.fragments.TriviaFragment;
 import com.isluji.travial.model.Trivia;
 import com.isluji.travial.model.TriviaQuestion;
+
+import java.util.List;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -37,23 +45,55 @@ public class MainActivity extends AppCompatActivity
 
     final int PERMISSION_LOCATION = 111;
 
-    private GoogleApiClient googleApiClient;
-    FusedLocationProviderClient locationClient;
+    private GoogleApiClient mGoogleApiClient;
+    FusedLocationProviderClient mLocationClient;
+    private AppViewModel mAppViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /** Database code */
+
+        // Get an instance of the created database
+        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
+        Log.v("app-db", "Se ha llamado a AppDB.getDatabase()");
+
+        // DB is created when the first query is executed
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+                db.runInTransaction(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                });
+            }
+        });
+
+
+        /** ViewModel code */
+
+        // Obtain the ViewModel component.
+        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+
+
+        /** Google Maps code */
+
         // Initialize the Google Play Services client
-        googleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
 
         // Initialize the Google Maps location client
-        locationClient = new FusedLocationProviderClient(this);
+        mLocationClient = new FusedLocationProviderClient(this);
+
+
+        /** Main screen code */
 
         // Set variables for the view elements
         Button btnPlay = (Button) findViewById(R.id.btnPlay);
@@ -74,7 +114,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // --------------------------------------------------------------
+
+        /** Navigation Drawer code */
 
         // Set the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

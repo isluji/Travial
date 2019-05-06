@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.isluji.travial.R;
+import com.isluji.travial.adapters.QuestionListAdapter;
 import com.isluji.travial.dummy.DummyContent;
 import com.isluji.travial.model.TriviaQuestion;
 
@@ -32,8 +33,7 @@ public class QuestionFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public QuestionFragment() {
-    }
+    public QuestionFragment() { }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -71,7 +71,7 @@ public class QuestionFragment extends Fragment {
             }
 
             // TODO: Replace with the true functionality (OnClickListeners)
-            recyclerView.setAdapter(new MyQuestionRecyclerViewAdapter(DummyContent.TRIVIAS.get(0).getQuestions(), mListener));
+            recyclerView.setAdapter(new QuestionListAdapter(DummyContent.TRIVIAS.get(0).getQuestions(), mListener));
         }
 
         return view;
