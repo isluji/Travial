@@ -6,8 +6,9 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(foreignKeys = @ForeignKey(entity = TriviaQuestion.class,
-        parentColumns = "id", childColumns = "question_id"))
+@Entity(tableName = "trivia_answer",
+        foreignKeys = @ForeignKey(entity = TriviaQuestion.class,
+            parentColumns = "id", childColumns = "question_id"))
 public class TriviaAnswer {
 
     @PrimaryKey(autoGenerate = true)

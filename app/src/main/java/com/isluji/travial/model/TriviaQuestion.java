@@ -9,8 +9,9 @@ import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 import androidx.room.Relation;
 
-@Entity(foreignKeys = @ForeignKey(entity = Trivia.class,
-        parentColumns = "id", childColumns = "trivia_id"))
+@Entity(tableName = "trivia_question",
+        foreignKeys = @ForeignKey(entity = Trivia.class,
+            parentColumns = "id", childColumns = "trivia_id"))
 public class TriviaQuestion {
 
     @PrimaryKey(autoGenerate = true)
@@ -66,33 +67,5 @@ public class TriviaQuestion {
 
     public void setTriviaId(int triviaId) {
         this.triviaId = triviaId;
-    }
-}
-
-
-/** POJO to include OneToMany Relation with TriviaAnswer */
-class TriviaQuestionWithAnswers {
-
-    private int id;
-
-    @Relation(parentColumn = "id", entityColumn = "question_id")
-    private List<TriviaAnswer> answers;
-
-    public TriviaQuestionWithAnswers() {
-    }
-
-
-    /* *** Implemented methods *** */
-
-    public TriviaAnswer getCorrectAnswer() {
-        TriviaAnswer correctAnswer = null;
-
-        for (TriviaAnswer a: answers) {
-            if (a.isCorrect()) {
-                correctAnswer = a;
-            }
-        }
-
-        return correctAnswer;
     }
 }

@@ -34,7 +34,8 @@ public class Trivia {
     private int poiId;
 
 
-    public Trivia(@NonNull String title, TriviaDifficulty difficulty, double passingScore, int poiId) {
+    public Trivia(@NonNull String title, TriviaDifficulty difficulty,
+                  double passingScore, int poiId) {
         this.title = title;
         this.difficulty = difficulty;
         this.passingScore = passingScore;
@@ -87,31 +88,5 @@ public class Trivia {
 
     public List<TriviaQuestion> getQuestions() {
         return new ArrayList<>();
-    }
-}
-
-
-/** POJO to include OneToMany Relation with TriviaQuestion */
-class TriviaWithQuestions {
-
-    private int id;
-
-    @Relation(parentColumn = "id", entityColumn = "trivia_id")
-    private List<TriviaQuestion> questions;
-
-    public TriviaWithQuestions() {
-    }
-
-
-    /* *** Implemented methods *** */
-
-    public double getMaxScore() {
-        int maxScore = 0;
-
-        for (TriviaQuestion q: questions) {
-            maxScore += q.getScore();
-        }
-
-        return maxScore;
     }
 }

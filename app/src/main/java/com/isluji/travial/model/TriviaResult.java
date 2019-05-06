@@ -8,10 +8,10 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(foreignKeys = {
-    @ForeignKey(entity = Trivia.class,
+@Entity(tableName = "trivia_result", foreignKeys =
+        {@ForeignKey(entity = Trivia.class,
             parentColumns = "id", childColumns = "trivia_id"),
-    @ForeignKey(entity = User.class,
+        @ForeignKey(entity = User.class,
             parentColumns = "email", childColumns = "user_email")})
 public class TriviaResult {
 
