@@ -51,34 +51,33 @@
                     android:textAppearance="?attr/textAppearanceListItem" />
             </LinearLayout>
 
-            <LinearLayout
+            <RadioGroup
+                android:id="@+id/rgAnswers"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#f4dc41"
-                android:orientation="vertical"
-                android:paddingLeft="10dp">
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:tag="@string/rg_answers_tag">
 
-                <CheckBox
-                    android:id="@+id/cbAnswer1"
+                <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Answer 1" />
 
-                <CheckBox
-                    android:id="@+id/cbAnswer2"
+                <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Answer 2" />
 
-                <CheckBox
-                    android:id="@+id/cbAnswer3"
+                <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Answer 3" />
-            </LinearLayout>
+            </RadioGroup>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

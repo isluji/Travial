@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.isluji.travial.R;
 import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.model.PointOfInterest;
@@ -21,40 +22,19 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import java.util.Locale;
+
 // We need to declare all the entities here
 @Database(entities = {User.class, PointOfInterest.class,
         Trivia.class, TriviaQuestion.class, TriviaAnswer.class,
-        TriviaResult.class}, version = 2)
+        TriviaResult.class}, version = 3)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
-    private static volatile AppDatabase INSTANCE;
-
     public abstract AppDao getAppDao();
 
-    private static RoomDatabase.Callback sDbCallback =
-        new RoomDatabase.Callback() {
-
-            /** Called after database has been created (only once) */
-            @Override
-            public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                super.onCreate(db);
-
-                Log.v("app-db", "Ejecutando AppDB onCreate()");
-
-//                new PopulateDbAsync(INSTANCE).execute();
-            }
-
-            /** Called every time database is opened */
-            @Override
-            public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                super.onOpen(db);
-
-                Log.v("app-db", "Ejecutando AppDB onOpen()");
-
-                new PopulateDbAsync(INSTANCE).execute();
-            }
-        };
+    // Marking the instance as volatile to ensure atomic access to the variable
+    private static volatile AppDatabase INSTANCE;
 
     public static AppDatabase getDatabase(final Context context) {
 
@@ -62,21 +42,20 @@ public abstract class AppDatabase extends RoomDatabase {
             synchronized (AppDatabase.class) {
 
                 if (INSTANCE == null) {
-                    /* Creating the database */
+                    /* ***** Creating the database ***** */
 
-                    // Create the builder that will create the DB
-                    RoomDatabase.Builder rdbBuilder = Room.databaseBuilder(
-                            context.getApplicationContext(), AppDatabase.class,"app-db");
+                    // Creates the database builder.
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class,"app-db")
 
-                    // Add onCreate and onOpen callbacks to the builder
-                    rdbBuilder = rdbBuilder.addCallback(sDbCallback);
+                    // TODO? Migration path from version 1 to 2
+                    // Wipes and rebuilds instead of migrating if no Migration object.
+                    .fallbackToDestructiveMigration()
 
-                    // TODO: Migration path from version 1 to 2?
-                    // Esto borra la BD entera y la crea de nuevo
-                    rdbBuilder = rdbBuilder.fallbackToDestructiveMigration();
+                    // Add onCreate and onOpen callbacks to the builder.
+                    .addCallback(sCallback)
 
-                    // Creates a DB object in the application context
-                    INSTANCE = (AppDatabase) rdbBuilder.build();
+                    // Finally builds the database.
+                    .build();
 
                     Log.v("app-db", "Se ha construido la BD " +
                             "( rdbBuilder.build() )");
@@ -87,8 +66,35 @@ public abstract class AppDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    private static RoomDatabase.Callback sCallback = new RoomDatabase.Callback() {
 
-    /** AsyncTask that prepopulates the database */
+        /** Called after database has been created (only once) */
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+
+            Log.v("app-db", "Ejecutando AppDB onCreate()");
+
+//            new PopulateDbAsync(INSTANCE).execute();
+        }
+
+        /** Called every time database is opened */
+        @Override
+        public void onOpen(@NonNull SupportSQLiteDatabase db) {
+            super.onOpen(db);
+
+            Log.v("app-db", "Ejecutando AppDB onOpen()");
+
+            // If you want to keep the data through app restarts,
+            // comment out the following line.
+            new PopulateDbAsync(INSTANCE).execute();
+        }
+    };
+
+
+    /**
+     * Populate the database in the background.
+     */
     private static class PopulateDbAsync extends AsyncTask<Void, Void, Void> {
 
         private final AppDao mDao;
@@ -99,45 +105,49 @@ public abstract class AppDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(final Void... params) {
+            // Start the app with a clean database every time.
+            // Not needed if you only populate on creation.
+            mDao.deleteAllUsers();
             mDao.deleteAllAnswers();
             mDao.deleteAllQuestions();
             mDao.deleteAllTrivias();
             mDao.deleteAllPois();
 
+            User user = new User("usuario@gmail.com", "contrasenia", "Spain");
+            mDao.insertUser(user);
+
             // TODO: Implement POIs' image and location
 
-            // Create POI and insert it in the DB, for its ID to be generated.
-            PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-
+            // After we insert the POI in the DB, we need to get the ID
+            // that Room has autogenerated for it, so we can create
+            // the Trivia using that ID as a reference to its related POI
+            PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, "mipmap-hdpi/poi_fuente_rey.jpg", null);
             mDao.insertPoi(poi);
-
             poi.setId(mDao.getPoiId(poi.getName()));
-            Log.v("app-db", new Gson().toJson(poi));
 
-            // We can now use that ID in the Trivia constructor
+            // Repeat process with the Trivia and its Questions
             Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
-
-            // Repeat process with Trivia and the TriviaQuestions
             mDao.insertTrivia(trivia);
-
             trivia.setId(mDao.getTriviaId(trivia.getTitle()));
+
             TriviaQuestion q1 = new TriviaQuestion("¿Quién fue su autor?", 3.33, trivia.getId());
             TriviaQuestion q2 = new TriviaQuestion("¿En qué año fue construida?", 3.33, trivia.getId());
             TriviaQuestion q3 = new TriviaQuestion("¿Cuál es su estilo arquitectónico?", 3.33, trivia.getId());
 
+            // Repeat process with each Question and its Answers
             mDao.insertQuestions(q1, q2, q3);
-
             q1.setId(mDao.getQuestionId(q1.getStatement()));
+            q2.setId(mDao.getQuestionId(q2.getStatement()));
+            q3.setId(mDao.getQuestionId(q3.getStatement()));
+
             TriviaAnswer a1_1 = new TriviaAnswer("José Álvarez Cubero", false, q1.getId());
             TriviaAnswer a1_2 = new TriviaAnswer("Remigio del Mármol", true, q1.getId());
             TriviaAnswer a1_3 = new TriviaAnswer("Adolfo Lozano Sidro", false, q1.getId());
 
-            q2.setId(mDao.getQuestionId(q2.getStatement()));
             TriviaAnswer a2_1 = new TriviaAnswer("1803", true, q2.getId());
             TriviaAnswer a2_2 = new TriviaAnswer("1805", false, q2.getId());
             TriviaAnswer a2_3 = new TriviaAnswer("1823", false, q2.getId());
 
-            q3.setId(mDao.getQuestionId(q3.getStatement()));
             TriviaAnswer a3_1 = new TriviaAnswer("Románico", false, q3.getId());
             TriviaAnswer a3_2 = new TriviaAnswer("Renacentista", false, q3.getId());
             TriviaAnswer a3_3 = new TriviaAnswer("Barroco", true, q3.getId());
@@ -145,6 +155,8 @@ public abstract class AppDatabase extends RoomDatabase {
             mDao.insertAnswers(a1_1, a1_2, a1_3,
                     a2_1, a2_2, a2_3,
                     a3_1, a3_2, a3_3);
+
+//            Log.v("app-db", "TRIVIA: " + new Gson().toJson(mDao.getAllTrivias().getValue()));
 
             return null;
         }

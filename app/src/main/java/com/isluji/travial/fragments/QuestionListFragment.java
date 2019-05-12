@@ -2,8 +2,11 @@ package com.isluji.travial.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,8 +15,12 @@ import android.view.ViewGroup;
 
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.QuestionListAdapter;
-import com.isluji.travial.dummy.DummyContent;
-import com.isluji.travial.model.TriviaQuestion;
+import com.isluji.travial.data.AppViewModel;
+import com.isluji.travial.model.TriviaQuestionWithAnswers;
+import com.isluji.travial.model.TriviaWithQuestions;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A fragment representing a list of Items.
@@ -21,27 +28,32 @@ import com.isluji.travial.model.TriviaQuestion;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class QuestionFragment extends Fragment {
+public class QuestionListFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
-    private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
+    private static final String SELECTED_TRIVIA_POSITION = "selectedTriviaPosition";
+
     private OnListFragmentInteractionListener mListener;
+    private AppViewModel mAppViewModel;
+    private int mSelectedTriviaPosition;
 
     /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
+     * Mandatory empty constructor for the fragment manager
+     * to instantiate the fragment (e.g. upon screen orientation changes).
      */
-    public QuestionFragment() { }
+    public QuestionListFragment() { }
 
-    // TODO: Customize parameter initialization
+    /**
+     * If we need to pass some parameters when we create the Fragment,
+     * we must use this custom initializer (NOT override the constructor)
+     */
     @SuppressWarnings("unused")
-    public static QuestionFragment newInstance(int columnCount) {
-        QuestionFragment fragment = new QuestionFragment();
+    public static QuestionListFragment newInstance(int position) {
+        QuestionListFragment fragment = new QuestionListFragment();
+
         Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putInt(SELECTED_TRIVIA_POSITION, position);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -50,28 +62,36 @@ public class QuestionFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            mSelectedTriviaPosition = getArguments().getInt(SELECTED_TRIVIA_POSITION);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_question_list, container, false);
 
-        // Set the adapter
         if (view instanceof RecyclerView) {
+
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
+            final QuestionListAdapter adapter = new QuestionListAdapter();
 
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            // TODO: Replace with the true functionality (OnClickListeners)
-            recyclerView.setAdapter(new QuestionListAdapter(DummyContent.TRIVIAS.get(0).getQuestions(), mListener));
+            // Get a new or existing ViewModel from the ViewModelProvider.
+            mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+
+            // Add an observer on the LiveData returned by getAllTrivias.
+            // The onChanged() method fires when the observed data changes
+            // and the activity is in the foreground.
+            mAppViewModel.getAllTrivias().observe(this, new Observer<List<TriviaWithQuestions>>() {
+                @Override
+                public void onChanged(@Nullable final List<TriviaWithQuestions> trivias) {
+                    // Update the cached copy of the trivias in the adapter.
+                    adapter.setSelectedTrivia( Objects.requireNonNull(trivias).get(mSelectedTriviaPosition) );
+                }
+            });
         }
 
         return view;
@@ -81,6 +101,7 @@ public class QuestionFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
         } else {
@@ -92,6 +113,7 @@ public class QuestionFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+
         mListener = null;
     }
 
@@ -107,6 +129,6 @@ public class QuestionFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(TriviaQuestion question);
+        void onListFragmentInteraction(TriviaQuestionWithAnswers question);
     }
 }

@@ -1,11 +1,15 @@
 package com.isluji.travial.activities;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,8 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -26,28 +29,32 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.isluji.travial.R;
 import com.isluji.travial.data.AppDatabase;
-import com.isluji.travial.data.AppViewModel;
 import com.isluji.travial.fragments.MapsFragment;
-import com.isluji.travial.fragments.QuestionFragment;
-import com.isluji.travial.fragments.TriviaFragment;
-import com.isluji.travial.model.Trivia;
-import com.isluji.travial.model.TriviaQuestion;
+import com.isluji.travial.fragments.QuestionListFragment;
+import com.isluji.travial.fragments.TriviaListFragment;
+import com.isluji.travial.fragments.TriviaResultFragment;
+import com.isluji.travial.model.TriviaQuestionWithAnswers;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
+
+import static android.view.View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,
-        TriviaFragment.OnListFragmentInteractionListener,
-        QuestionFragment.OnListFragmentInteractionListener {
+        TriviaListFragment.OnListFragmentInteractionListener,
+        QuestionListFragment.OnListFragmentInteractionListener,
+        TriviaResultFragment.OnFragmentInteractionListener {
 
     final int PERMISSION_LOCATION = 111;
 
     private GoogleApiClient mGoogleApiClient;
     FusedLocationProviderClient mLocationClient;
-    private AppViewModel mAppViewModel;
+//    private AppViewModel mAppViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         /** ViewModel code */
 
         // Obtain the ViewModel component.
-        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+//        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
 
 
         /** Google Maps code */
@@ -119,10 +126,11 @@ public class MainActivity extends AppCompatActivity
 
         // Set the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        this.setSupportActionBar(toolbar);
 
         // Set the FAB button
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -204,49 +212,99 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * Métodos para cargar los distintos fragmentos
-     */
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*TODO?*/}
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {/*TODO?*/}
+
+    @Override
+    public void onConnectionSuspended(int i) {/*TODO?*/}
+
+
+    /* ***** Methods to load the fragments ***** */
 
     public void loadPlayFragment() {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.app_bar_main, new TriviaFragment())
-                .addToBackStack(null)
-                .commit();
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new TriviaListFragment())
+            .addToBackStack(null)
+            .commit();
     }
 
     public void loadMapsFragment() {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.app_bar_main, new MapsFragment())
-                .addToBackStack(null)
-                .commit();
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new MapsFragment())
+            .addToBackStack(null)
+            .commit();
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    /* ***** Click listeners ***** */
+
+    @Override   // Listener method for TriviaListFragment
+    public void onListFragmentInteraction(int position) {
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, QuestionListFragment.newInstance(position))
+            .addToBackStack(null)
+            .commit();
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
+    @Override   // Listener method for QuestionListFragment
+    public void onListFragmentInteraction(TriviaQuestionWithAnswers qwa) {
+        // TODO?
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-
+    @Override   // Listener method for TriviaResultFragment
+    public void onFragmentInteraction(Uri uri) {
+        // TODO?
     }
 
-    @Override
-    public void onListFragmentInteraction(Trivia trivia) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.app_bar_main, new QuestionFragment())
-                .addToBackStack(null)
-                .commit();
+    public void onSendButtonClicked(View view) {
+        // TODO: Show a different screen if the user pass or fail the test
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new TriviaResultFragment())
+            .addToBackStack(null)
+            .commit();
     }
 
-    @Override
-    public void onListFragmentInteraction(TriviaQuestion question) {
-        Log.v("questionList", "He pulsado " + question.getStatement());
+    public void onResetButtonClicked(View view) {
+        List<Fragment> fragments = this.getSupportFragmentManager().getFragments();
+        ViewGroup rootView = (ViewGroup) Objects.requireNonNull(
+                fragments.get(fragments.size() - 1).getView() ).getRootView();
+
+        for (View rg : getViewsByTag(rootView, getString(R.string.rg_answers_tag))) {
+            ((RadioGroup) rg).clearCheck();
+        }
+    }
+
+    // -----------------------------------------------
+
+    /**
+     * @see <a href="https://stackoverflow.com/questions/5062264/find-all-views-with-tag">
+     *     Copyright: Shlomi Schwartz</a>
+     */
+    private static ArrayList<View> getViewsByTag(ViewGroup root, String tag){
+        ArrayList<View> views = new ArrayList<View>();
+        final int childCount = root.getChildCount();
+
+        for (int i = 0; i < childCount; i++) {
+            final View child = root.getChildAt(i);
+
+            if (child instanceof ViewGroup) {
+                views.addAll(getViewsByTag((ViewGroup) child, tag));
+            }
+
+            final Object tagObj = child.getTag();
+
+            if (tagObj != null && tagObj.equals(tag)) {
+                views.add(child);
+            }
+        }
+
+        return views;
     }
 }

@@ -3,6 +3,7 @@ package com.isluji.travial.data;
 import android.app.Application;
 
 import com.isluji.travial.model.Trivia;
+import com.isluji.travial.model.TriviaWithQuestions;
 
 import java.util.List;
 
@@ -11,36 +12,39 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+/**
+ * View Model to keep a reference to the trivia Repository
+ * and an up-to-date list of all trivias.
+ */
+
 public class AppViewModel extends AndroidViewModel {
 
     // TODO? Store a list of trivias or a single trivia?
     // TODO? Create a custom constructor -> ViewModelProvider.Factory
     // TODO? LiveData or MutableLiveData (trivias and _trivias)?
 
-    // _trivias and trivias are for proper encapsulation
-//    private final MutableLiveData<List<Trivia>> _trivias;
-
     private AppRepository mRepository;
 
-    // Cache the list of trivias.
-    private LiveData<List<Trivia>> mAllTrivias;
+    // Using LiveData and caching what getAllTrivias returns has several benefits:
+    // - We can put an observer on the data (instead of polling for changes)
+    //   and only update the UI when the data actually changes.
+    // - Repository is completely separated from the UI through the ViewModel.
+    private LiveData<List<TriviaWithQuestions>> mAllTrivias;
 
-    // Constructor that gets a reference to the repository
-    // and gets the list of trivias from the repository.
-    public AppViewModel (Application app) {
+    public AppViewModel(Application app) {
         super(app);
 
         mRepository = new AppRepository(app);
         mAllTrivias = mRepository.getAllTrivias();
     }
 
-    /* Wrapper methods that completely hide the implementation from the UI */
 
-    public LiveData<List<Trivia>> getAllTrivias() {
+    /*
+     * Wrapper methods that completely hide
+     * the implementation from the UI
+     */
+
+    public LiveData<List<TriviaWithQuestions>> getAllTrivias() {
         return mAllTrivias;
-    }
-
-    public void insertTrivia(Trivia trivia) {
-        mRepository.insertTrivia(trivia);
     }
 }

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.recyclerview.widget.RecyclerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/triviaList"
-    android:name="com.isluji.travial.fragments.TriviaFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="64dp"
-    android:background="@android:color/darker_gray"
     android:paddingBottom="8dp"
+    android:background="@android:color/darker_gray"
+
+    android:name="com.isluji.travial.fragments.TriviaFragment"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-    tools:context=".fragments.TriviaFragment"
-    tools:listitem="@layout/fragment_trivia" />
+    tools:context=".fragments.TriviaListFragment"
+    tools:listitem="@layout/fragment_trivia_item" />

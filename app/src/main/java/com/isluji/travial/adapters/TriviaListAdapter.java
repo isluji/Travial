@@ -1,6 +1,5 @@
 package com.isluji.travial.adapters;
 
-import android.content.Context;
 import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
@@ -13,10 +12,12 @@ import android.widget.TextView;
 
 import com.isluji.travial.R;
 import com.isluji.travial.dummy.DummyContent;
-import com.isluji.travial.fragments.TriviaFragment.OnListFragmentInteractionListener;
-import com.isluji.travial.model.Trivia;
+import com.isluji.travial.fragments.TriviaListFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.model.TriviaWithQuestions;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DummyContent.DummyItem} and makes a call to the
@@ -25,70 +26,60 @@ import java.util.List;
  */
 public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.ViewHolder> {
 
-    private final LayoutInflater mInflater;
-    private List<Trivia> mTrivias;  // Cached copy of trivias
     private final OnListFragmentInteractionListener mListener;
 
-    public TriviaListAdapter(Context context, OnListFragmentInteractionListener listener) {
-        mInflater = LayoutInflater.from(context);
+    // Cached copy of the Trivias
+    private List<TriviaWithQuestions> mTriviaList;
+
+    public TriviaListAdapter(OnListFragmentInteractionListener listener) {
+        mTriviaList = Collections.emptyList();
+
         mListener = listener;
     }
 
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView =  mInflater.inflate(R.layout.fragment_trivia, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext())
+            .inflate(R.layout.fragment_trivia_item, parent, false);
+
         return new ViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        TriviaWithQuestions current = mTriviaList.get(position);
 
-        // If data is ready, set the values to the views
-        if (mTrivias != null) {
-            Trivia current = mTrivias.get(position);
+        int resId = Resources.getSystem().getIdentifier(
+                "mipmap-hdpi/ic_launcher.png", "drawable",
+                Objects.requireNonNull(getClass().getPackage()).getName());
 
-            int resId = Resources.getSystem().getIdentifier(
-                    "mipmap-hdpi/ic_launcher.png", "drawable",
-                    getClass().getPackage().getName());
+        holder.mTitleView.setText( current.getTrivia().getTitle() );
+        holder.mDifficultyView.setText( current.getTrivia().getDifficulty().toString() );
+        holder.mRelatedPoiView.setImageResource( resId );
 
-            holder.mTitleView.setText( current.getTitle() );
-            holder.mDifficultyView.setText(String.valueOf( current.getDifficulty() ));
-            holder.mRelatedPoiView.setImageResource(resId);
-
-        // Covers the case of data not being ready yet.
-        } else {
-            holder.mTitleView.setText("No Trivia");
-        }
-
-        // TODO: Implement the click listener properly
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mListener != null) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-//                    mListener.onListFragmentInteraction(holder.getItemId());
+                    // Notify the active callbacks interface
+                    // (the activity, if the fragment is attached to one)
+                    // that an item has been selected.
+                    mListener.onListFragmentInteraction(position);
                 }
             }
         });
     }
 
-    public void setTrivias(List<Trivia> trivias){
-        mTrivias = trivias;
-        this.notifyDataSetChanged();
-    }
-
-    // getItemCount() is called many times,
-    // and when it is first called, mTrivias has not been updated
-    // (means initially, it's null, and we can't return null).
     @Override
     public int getItemCount() {
-        if (mTrivias != null) {
-            return mTrivias.size();
-        } else {
-            return 0;
-        }
+        return mTriviaList.size();
+    }
+
+    public void setTrivias(List<TriviaWithQuestions> trivias){
+        mTriviaList = trivias;
+        this.notifyDataSetChanged();
     }
 
 
@@ -98,17 +89,12 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Vi
         private final TextView mDifficultyView;
         private final ImageView mRelatedPoiView;
 
-        private ViewHolder(View view) {
-            super(view);
+        private ViewHolder(View itemView) {
+            super(itemView);
 
-            mTitleView = view.findViewById(R.id.textTitle);
-            mDifficultyView = view.findViewById(R.id.textDifficulty);
-            mRelatedPoiView = view.findViewById(R.id.imgRelatedPoi);
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mTitleView.getText() + "'";
+            mTitleView = itemView.findViewById(R.id.textTitle);
+            mDifficultyView = itemView.findViewById(R.id.textDifficulty);
+            mRelatedPoiView = itemView.findViewById(R.id.imgRelatedPoi);
         }
     }
 }
