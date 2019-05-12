@@ -24,7 +24,7 @@ public class TriviaResult {
 
     // Foreign key from User
     @ColumnInfo(name = "user_email", index = true)
-    private int userEmail;
+    private String userEmail;
 
     private int score;
 
@@ -32,7 +32,11 @@ public class TriviaResult {
     private Timestamp timestamp;
 
 
-    public TriviaResult() {
+    public TriviaResult(int triviaId, String userEmail, int score, @NonNull Timestamp timestamp) {
+        this.triviaId = triviaId;
+        this.userEmail = userEmail;
+        this.score = score;
+        this.timestamp = timestamp;
     }
 
 
@@ -54,11 +58,11 @@ public class TriviaResult {
         this.triviaId = triviaId;
     }
 
-    public int getUserEmail() {
+    public String getUserEmail() {
         return userEmail;
     }
 
-    public void setUserEmail(int userEmail) {
+    public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
     }
 

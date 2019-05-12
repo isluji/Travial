@@ -85,8 +85,4 @@ public class Trivia {
     public void setPoiId(int poiId) {
         this.poiId = poiId;
     }
-
-    public List<TriviaQuestion> getQuestions() {
-        return new ArrayList<>();
-    }
 }

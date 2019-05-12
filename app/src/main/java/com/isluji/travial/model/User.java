@@ -16,12 +16,8 @@ public class User {
     @NonNull
     private String password;
 
-    // TODO: If it's not set, we'll use email's username (left of @)
     private String username;
-
-    // TODO: If it's null, we'll take it as 'false'
     private boolean premium;
-
     private String country;
 
     @NonNull
@@ -29,17 +25,27 @@ public class User {
     private Date registrationDate;
 
 
-    public User() {
+    public User(@NonNull String email, @NonNull String password, String country) {
+        this.email = email;
+        this.password = password;
+        this.country = country;
+
+        // The default username is the email's one
+        int atIndex = email.lastIndexOf('@');
+        this.username = email.substring(0, atIndex);
+        this.registrationDate = new Date(); // Current date
+        this.premium = false;   // False by default
     }
 
 
     /** Getters and setters */
 
+    @NonNull
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@NonNull String email) {
         this.email = email;
     }
 

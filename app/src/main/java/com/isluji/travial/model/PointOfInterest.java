@@ -47,7 +47,8 @@ public class PointOfInterest {
         this.location = location;
     }
 
-    /** Getters and setters */
+
+    /* ******** Getters and setters ******** */
 
     public int getId() {
         return id;
@@ -115,7 +116,7 @@ public class PointOfInterest {
     }
 
 
-    /** Implemented methods */
+    /* ******** Implemented methods ******** */
 
     public boolean hasAnyTrivia() {
         return false;   // TODO

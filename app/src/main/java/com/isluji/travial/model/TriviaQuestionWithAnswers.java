@@ -20,11 +20,26 @@ public class TriviaQuestionWithAnswers {
     }
 
 
-    // ----------------------------------
+    /* ******** Getters and setters ******** */
 
     public TriviaQuestion getQuestion() {
         return question;
     }
+
+    public void setQuestion(TriviaQuestion question) {
+        this.question = question;
+    }
+
+    public List<TriviaAnswer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<TriviaAnswer> answers) {
+        this.answers = answers;
+    }
+
+
+    /* ******** Implemented methods ******** */
 
     public TriviaAnswer getCorrectAnswer() {
         TriviaAnswer correctAnswer = null;
