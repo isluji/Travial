@@ -1,23 +1,29 @@
-package com.isluji.travial.fragments;
+package com.isluji.travial.ui;
 
 import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.isluji.travial.R;
-import com.isluji.travial.adapters.QuestionListAdapter;
+import com.isluji.travial.adapters.TriviaAdapter;
 import com.isluji.travial.data.AppViewModel;
+import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
 import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.misc.TriviaUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +34,7 @@ import java.util.Objects;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class QuestionListFragment extends Fragment {
+public class TriviaFragment extends Fragment {
 
     private static final String SELECTED_TRIVIA_POSITION = "selectedTriviaPosition";
 
@@ -40,15 +46,15 @@ public class QuestionListFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager
      * to instantiate the fragment (e.g. upon screen orientation changes).
      */
-    public QuestionListFragment() { }
+//    public TriviaFragment() { }
 
     /**
-     * If we need to pass some parameters when we create the Fragment,
-     * we must use this custom initializer (NOT override the constructor)
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
      */
     @SuppressWarnings("unused")
-    public static QuestionListFragment newInstance(int position) {
-        QuestionListFragment fragment = new QuestionListFragment();
+    public static TriviaFragment newInstance(int position) {
+        TriviaFragment fragment = new TriviaFragment();
 
         Bundle args = new Bundle();
         args.putInt(SELECTED_TRIVIA_POSITION, position);
@@ -74,7 +80,7 @@ public class QuestionListFragment extends Fragment {
 
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            final QuestionListAdapter adapter = new QuestionListAdapter();
+            final TriviaAdapter adapter = new TriviaAdapter();
 
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -117,6 +123,11 @@ public class QuestionListFragment extends Fragment {
         mListener = null;
     }
 
+    public int getSelectedTriviaPosition() {
+        return mSelectedTriviaPosition;
+    }
+
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -131,4 +142,5 @@ public class QuestionListFragment extends Fragment {
         // TODO: Update argument type and name
         void onListFragmentInteraction(TriviaQuestionWithAnswers question);
     }
+
 }

@@ -1,4 +1,4 @@
-package com.isluji.travial.data;
+package com.isluji.travial.misc;
 
 import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;

@@ -1,4 +1,4 @@
-package com.isluji.travial.fragments;
+package com.isluji.travial.ui;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -35,11 +35,11 @@ public class TriviaListFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager
      * to instantiate the fragment (e.g. upon screen orientation changes).
      */
-    public TriviaListFragment() { }
+//    public TriviaListFragment() { }
 
     /**
-     * If we need to pass some parameters when we create the Fragment,
-     * we must use this custom initializer (NOT override the constructor)
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
      */
     @SuppressWarnings("unused")
     public static TriviaListFragment newInstance() {
@@ -65,33 +65,7 @@ public class TriviaListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trivia_list, container, false);
 
-        /** Data Binding code */
-
-        // Inflate view and obtain an instance of the binding class.
-//        FragmentTriviaBinding binding = FragmentTriviaBinding.inflate(this.getLayoutInflater());
-
-        // Assign the component to a property in the binding class.
-//        binding.setViewModel(appViewModel);
-
-        // Make the LiveData be properly observed when bound to the XML.
-//        binding.setLifecycleOwner(this);
-
-        // Set the Activity's content view to the given layout
-        // and return the associated binding.
-//        binding = DataBindingUtil.setContentView(
-//                Objects.requireNonNull(this.getActivity()),
-//                binding.getRoot().getId());
-//        this.getActivity().setContentView(binding.getRoot());
-
-        // TEST access UI data from the activity/fragment
-//        appViewModel.mAllTrivias.getValue().get(0).setTitle("Nuevo titulo");
-
-        // TEST data binding access
-//        Trivia trivia = new Trivia("trivia ejemplo", TriviaDifficulty.MEDIUM, 5, 1);
-//        binding.getViewModel().testTrivia = trivia;
-
-
-        /** RecyclerView and Adapter code */
+        /* ***** RecyclerView and Adapter code ***** */
 
         if (view instanceof RecyclerView) {
             // TODO? Si falla, cambiar "context" por "this.getActivity()" en los dos últimos métodos
@@ -138,6 +112,7 @@ public class TriviaListFragment extends Fragment {
 
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this
