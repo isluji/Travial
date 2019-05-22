@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 3,
-    "identityHash": "8d7f93ec50ffd476021e6880415a1431",
+    "version": 4,
+    "identityHash": "8e1fbeeb9f940da8533eab6b6002db43",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`email` TEXT NOT NULL, `password` TEXT NOT NULL, `username` TEXT, `premium` INTEGER NOT NULL, `country` TEXT, `registration_date` INTEGER NOT NULL, PRIMARY KEY(`email`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`email` TEXT NOT NULL, `googleId` TEXT NOT NULL, `registration_date` INTEGER NOT NULL, `premium` INTEGER NOT NULL, PRIMARY KEY(`email`))",
         "fields": [
           {
             "fieldPath": "email",
@@ -15,32 +15,20 @@
             "notNull": true
           },
           {
-            "fieldPath": "password",
-            "columnName": "password",
+            "fieldPath": "googleId",
+            "columnName": "googleId",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "username",
-            "columnName": "username",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "premium",
-            "columnName": "premium",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "country",
-            "columnName": "country",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "registrationDate",
             "columnName": "registration_date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "premium",
+            "columnName": "premium",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -393,7 +381,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"8d7f93ec50ffd476021e6880415a1431\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"8e1fbeeb9f940da8533eab6b6002db43\")"
     ]
   }
 }

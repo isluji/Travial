@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.isluji.travial.R;
 import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.model.PointOfInterest;
@@ -14,6 +12,7 @@ import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestion;
 import com.isluji.travial.model.TriviaResult;
 import com.isluji.travial.model.User;
+import com.isluji.travial.misc.Converters;
 
 import androidx.annotation.NonNull;
 import androidx.room.Database;
@@ -22,12 +21,10 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import java.util.Locale;
-
 // We need to declare all the entities here
 @Database(entities = {User.class, PointOfInterest.class,
         Trivia.class, TriviaQuestion.class, TriviaAnswer.class,
-        TriviaResult.class}, version = 3)
+        TriviaResult.class}, version = 4)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -113,7 +110,7 @@ public abstract class AppDatabase extends RoomDatabase {
             mDao.deleteAllTrivias();
             mDao.deleteAllPois();
 
-            User user = new User("usuario@gmail.com", "contrasenia", "Spain");
+            User user = new User("isluji@gmail.com", "isluji");
             mDao.insertUser(user);
 
             // TODO: Implement POIs' image and location

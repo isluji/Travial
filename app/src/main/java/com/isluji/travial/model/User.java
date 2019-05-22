@@ -10,29 +10,23 @@ import androidx.room.PrimaryKey;
 @Entity
 public class User {
     @NonNull
-    @PrimaryKey
+    @PrimaryKey // Internal ID
     private String email;
 
-    @NonNull
-    private String password;
-
-    private String username;
-    private boolean premium;
-    private String country;
+    @NonNull    // External ID
+    private String googleId;
 
     @NonNull
     @ColumnInfo(name = "registration_date")
     private Date registrationDate;
 
+    private boolean premium;
 
-    public User(@NonNull String email, @NonNull String password, String country) {
+
+    public User(@NonNull String email, @NonNull String googleId) {
         this.email = email;
-        this.password = password;
-        this.country = country;
+        this.googleId = googleId;
 
-        // The default username is the email's one
-        int atIndex = email.lastIndexOf('@');
-        this.username = email.substring(0, atIndex);
         this.registrationDate = new Date(); // Current date
         this.premium = false;   // False by default
     }
@@ -50,20 +44,8 @@ public class User {
     }
 
     @NonNull
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(@NonNull String password) {
-        this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    public String getGoogleId() {
+        return googleId;
     }
 
     public boolean isPremium() {
@@ -72,14 +54,6 @@ public class User {
 
     public void setPremium(boolean premium) {
         this.premium = premium;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
     }
 
     @NonNull

@@ -1,8 +1,5 @@
 package com.isluji.travial.adapters;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,20 +7,22 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.isluji.travial.R;
-import com.isluji.travial.dummy.DummyContent;
-import com.isluji.travial.fragments.QuestionListFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.ui.TriviaFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
 import com.isluji.travial.model.TriviaWithQuestions;
 
 import java.util.Collections;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyContent.DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link TriviaQuestionWithAnswers} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
  */
-public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapter.ViewHolder> {
+public class TriviaAdapter extends RecyclerView.Adapter<TriviaAdapter.ViewHolder> {
 
 //    private final OnListFragmentInteractionListener mListener;
     private static final int VIEW_TYPE_ITEM = 1;
@@ -32,8 +31,8 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
     // Cached copy of the selected Trivia with its Questions
     private TriviaWithQuestions mSelectedTrivia;
 
-    public QuestionListAdapter(/* OnListFragmentInteractionListener listener */) {
-        mSelectedTrivia = new TriviaWithQuestions(null, Collections.emptyList());
+    public TriviaAdapter(/* OnListFragmentInteractionListener listener */) {
+        mSelectedTrivia = new TriviaWithQuestions(null/*, Collections.emptyList()*/);
 
 //        mListener = listener;
     }
@@ -70,19 +69,32 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
             holder.mStatementView.setText(current.getQuestion().getStatement());
             holder.mScoreView.setText(String.valueOf(current.getQuestion().getScore()));
 
-            ((RadioButton) holder.mAnswerGroup.getChildAt(0))
-                    .setText(current.getAnswers().get(0).getText());
-            ((RadioButton) holder.mAnswerGroup.getChildAt(1))
-                    .setText(current.getAnswers().get(1).getText());
-            ((RadioButton) holder.mAnswerGroup.getChildAt(2))
-                    .setText(current.getAnswers().get(2).getText());
+            RadioButton option1 = (RadioButton) holder.mAnswerGroup.getChildAt(0);
+            RadioButton option2 = (RadioButton) holder.mAnswerGroup.getChildAt(1);
+            RadioButton option3 = (RadioButton) holder.mAnswerGroup.getChildAt(2);
+
+            TriviaAnswer answer1 = current.getAnswers().get(0);
+            TriviaAnswer answer2 = current.getAnswers().get(1);
+            TriviaAnswer answer3 = current.getAnswers().get(2);
+
+            option1.setText(answer1.getText());
+            option2.setText(answer2.getText());
+            option3.setText(answer3.getText());
+
+//            option1.setChecked(answer1.isSelected());
         }
     }
 
     @Override
     public int getItemCount() {
-        // We add an extra item to count the footer
-        return mSelectedTrivia.getQuestions().size() + 1;
+        int itemCount = 0;
+
+        if (mSelectedTrivia.getQuestions() != null) {
+            // We add an extra item to count the footer
+            itemCount = mSelectedTrivia.getQuestions().size() + 1;
+        }
+
+        return itemCount;
     }
 
     @Override
@@ -96,11 +108,11 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
         }
     }
 
-
     public void setSelectedTrivia(TriviaWithQuestions twq) {
         mSelectedTrivia = twq;
         this.notifyDataSetChanged();
     }
+
 
     class ViewHolder extends RecyclerView.ViewHolder {
         // TODO: Design Question card and declare here the views

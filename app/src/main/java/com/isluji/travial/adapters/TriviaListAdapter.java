@@ -1,18 +1,17 @@
 package com.isluji.travial.adapters;
 
 import android.content.res.Resources;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.isluji.travial.R;
-import com.isluji.travial.dummy.DummyContent;
-import com.isluji.travial.fragments.TriviaListFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.ui.TriviaListFragment.OnListFragmentInteractionListener;
 import com.isluji.travial.model.TriviaWithQuestions;
 
 import java.util.Collections;
@@ -20,9 +19,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyContent.DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link TriviaWithQuestions} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
  */
 public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.ViewHolder> {
 

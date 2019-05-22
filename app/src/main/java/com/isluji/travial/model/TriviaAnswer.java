@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "trivia_answer",
@@ -23,6 +24,9 @@ public class TriviaAnswer {
     // Foreign key from TriviaQuestion
     @ColumnInfo(name = "question_id", index = true)
     private int questionId;
+
+    @Ignore
+    private boolean selected;
 
 
     public TriviaAnswer(@NonNull String text, boolean correct, int questionId) {
@@ -65,5 +69,13 @@ public class TriviaAnswer {
 
     public void setQuestionId(int questionId) {
         this.questionId = questionId;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }

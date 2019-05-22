@@ -47,6 +47,12 @@ public interface AppDao {
 
     // ----------------------------------
 
+    @Query("SELECT * FROM User ORDER BY email ASC")
+    List<User> getAllUsers();
+
+    @Query("SELECT * FROM Trivia ORDER BY id ASC")
+    List<Trivia> getAllTriviass();
+
     @Transaction
     @Query("SELECT * FROM trivia WHERE id = :id")
     LiveData<TriviaWithQuestions> findTriviaById(int id);

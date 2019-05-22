@@ -1,5 +1,6 @@
 package com.isluji.travial.model;
 
+import java.util.Date;
 import java.sql.Timestamp;
 
 import androidx.annotation.NonNull;
@@ -26,17 +27,18 @@ public class TriviaResult {
     @ColumnInfo(name = "user_email", index = true)
     private String userEmail;
 
-    private int score;
+    private double score;
 
     @NonNull
     private Timestamp timestamp;
 
 
-    public TriviaResult(int triviaId, String userEmail, int score, @NonNull Timestamp timestamp) {
+    public TriviaResult(int triviaId, String userEmail, double score) {
         this.triviaId = triviaId;
         this.userEmail = userEmail;
         this.score = score;
-        this.timestamp = timestamp;
+
+        this.timestamp = new Timestamp(new Date().getTime());
     }
 
 
@@ -66,11 +68,11 @@ public class TriviaResult {
         this.userEmail = userEmail;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         this.score = score;
     }
 
