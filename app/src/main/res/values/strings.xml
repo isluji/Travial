@@ -104,4 +104,8 @@
     <string name="invalid_email">Not a valid email</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+
+    <!-- TODO: Are these the right URLs/URIs? -->
+    <string name="google_redirect_url">urn:ietf:wg:oauth:2.0:oob</string>
+    <string name="google_scope">https://www.googleapis.com/auth/contacts.readonly</string>
 </resources>

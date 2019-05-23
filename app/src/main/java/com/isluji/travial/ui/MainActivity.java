@@ -321,12 +321,12 @@ public class MainActivity extends AppCompatActivity
 
         // TODO? Hardcoding credentials seems a bad practice
         // Google API Console -> App's credentials
-        String clientId = "88203467313-es0ega7cqntrq7dqn3gfuk4llnjbksho.apps.googleusercontent.com";
-        String clientSecret = "PBWUiIc1KjRM36DghGQNW7q8";
+        String clientId = getString(R.string.google_client_id);
+        String clientSecret = getString(R.string.google_client_secret);
 
         // (Or your redirect URL for web based applications)
-        String redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
-        String scope = "https://www.googleapis.com/auth/contacts.readonly";
+        String redirectUrl = getString(R.string.google_redirect_url);
+        String scope = getString(R.string.google_scope);
 
         /* ***** STEP 1: Authorize ***** */
         String authorizationUrl =
