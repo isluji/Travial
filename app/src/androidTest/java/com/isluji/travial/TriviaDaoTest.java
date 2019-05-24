@@ -81,8 +81,7 @@ public class TriviaDaoTest {
     public void insertAndGetTrivia() throws Exception {
         /* Insert test data */
         PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        mDao.insertPoi(poi);
-        poi.setId(mDao.getPoiId(poi.getName()));
+        poi.setId(mDao.insertPoi(poi));
 
         Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
         mDao.insertTrivia(trivia);
@@ -96,8 +95,7 @@ public class TriviaDaoTest {
     public void getAllTrivias() throws Exception {
         /* Insert test data */
         PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        mDao.insertPoi(poi);
-        poi.setId(mDao.getPoiId(poi.getName()));
+        poi.setId(mDao.insertPoi(poi));
 
         Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
         mDao.insertTrivia(trivia);
@@ -114,8 +112,7 @@ public class TriviaDaoTest {
     public void deleteAll() throws Exception {
         /* Insert test data */
         PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        mDao.insertPoi(poi);
-        poi.setId(mDao.getPoiId(poi.getName()));
+        poi.setId(mDao.insertPoi(poi));
 
         Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
         mDao.insertTrivia(trivia);
