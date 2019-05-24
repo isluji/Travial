@@ -5,15 +5,17 @@ import java.util.Date;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(indices = @Index(name = "google_id", value = "google_id", unique = true))
 public class User {
     @NonNull
     @PrimaryKey // Internal ID
     private String email;
 
     @NonNull    // External ID
+    @ColumnInfo(name = "google_id")
     private String googleId;
 
     @NonNull
