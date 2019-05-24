@@ -3,6 +3,7 @@ package com.isluji.travial.data;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 
@@ -17,41 +18,25 @@ import java.util.List;
 
 @Dao
 public interface AppDao {
-    // TODO? Define conflict strategy
-
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insertUser(User user);
 
     @Insert
-    void insertPoi(PointOfInterest poi);
+    long insertPoi(PointOfInterest poi);
 
     @Insert
-    void insertTrivia(Trivia trivia);
+    long insertTrivia(Trivia trivia);
 
     @Insert
-    void insertQuestions(TriviaQuestion... questions);
+    long[] insertQuestions(TriviaQuestion... questions);
 
     @Insert
-    void insertAnswers(TriviaAnswer... answers);
-
-    // ----------------------------------
-
-    @Query("SELECT id FROM poi WHERE name = :name")
-    int getPoiId(String name);
-
-    @Query("SELECT id FROM trivia WHERE title = :title")
-    int getTriviaId(String title);
-
-    @Query("SELECT id FROM trivia_question WHERE statement = :statement")
-    int getQuestionId(String statement);
+    long[] insertAnswers(TriviaAnswer... answers);
 
     // ----------------------------------
 
     @Query("SELECT * FROM User ORDER BY email ASC")
     List<User> getAllUsers();
-
-    @Query("SELECT * FROM Trivia ORDER BY id ASC")
-    List<Trivia> getAllTriviass();
 
     @Transaction
     @Query("SELECT * FROM trivia WHERE id = :id")

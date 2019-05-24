@@ -1,7 +1,9 @@
 package com.isluji.travial.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,15 +41,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleBrowserClientRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.people.v1.PeopleService;
-import com.google.api.services.people.v1.model.Person;
 import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.data.AppDatabase;
@@ -55,6 +54,7 @@ import com.isluji.travial.data.AppViewModel;
 import com.isluji.travial.misc.TriviaUtils;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
 import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.User;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -176,8 +176,18 @@ public class MainActivity extends AppCompatActivity
 
         // Check for existing Google Sign-In account.
         // (If the user is already signed in, 'account' will be non-null.)
-//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-//        updateUI(account);
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+
+        // account != null
+        // -> The user has already signed in to your app with Google.
+        // -> Update your UI accordingly for your app.
+//        if (account != null) {
+//            updateUiOnLogin(account);
+//        }
+
+        // account == null
+        // -> The user has not yet signed in to your app with Google.
+        // -> Display the Google Sign-in button.
     }
 
     @Override
@@ -189,7 +199,7 @@ public class MainActivity extends AppCompatActivity
             // The Task returned from this call is always completed
             // (no need to attach a listener.)
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
+            this.handleSignInResult(task);
         }
     }
 
@@ -233,18 +243,18 @@ public class MainActivity extends AppCompatActivity
         // TODO: Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_tutorial) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_rankings) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_premium) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_logout) {
+            this.logOut();
         }
 
         // Close the drawer when the action is done
@@ -301,7 +311,7 @@ public class MainActivity extends AppCompatActivity
 
     /* ***** Google APIs setup ***** */
 
-    public GoogleSignInOptions setUpSignInApi() {
+    private GoogleSignInOptions setUpSignInApi() {
         // Configure sign-in to request user's ID, email address, and basic profile.
         // (ID and basic profile are included in DEFAULT_SIGN_IN.)
         GoogleSignInOptions gso = new GoogleSignInOptions
@@ -315,22 +325,21 @@ public class MainActivity extends AppCompatActivity
         return gso;
     }
 
-    public void setUpPeopleApi() throws IOException {
+    private void setUpPeopleApi() throws IOException {
         HttpTransport httpTransport = new NetHttpTransport();
         JacksonFactory jsonFactory = new JacksonFactory();
 
-        // TODO? Hardcoding credentials seems a bad practice
         // Google API Console -> App's credentials
         String clientId = getString(R.string.google_client_id);
-        String clientSecret = getString(R.string.google_client_secret);
+//        String clientSecret = getString(R.string.google_client_secret);
 
         // (Or your redirect URL for web based applications)
-        String redirectUrl = getString(R.string.google_redirect_url);
+        String redirectUri = getString(R.string.google_redirect_uri);
         String scope = getString(R.string.google_scope);
 
         /* ***** STEP 1: Authorize ***** */
         String authorizationUrl =
-            new GoogleBrowserClientRequestUrl(clientId, redirectUrl, Arrays.asList(scope))
+            new GoogleBrowserClientRequestUrl(clientId, redirectUri, Arrays.asList(scope))
                 .build();
 
         Log.v(SIGN_IN_TAG, "authorizationUrl: " + authorizationUrl);
@@ -344,20 +353,17 @@ public class MainActivity extends AppCompatActivity
         System.out.println("What is the authorization code?");
         String code = in.readLine();
 
-        Log.v(SIGN_IN_TAG, "httpTransport: " + clientId);
-        Log.v(SIGN_IN_TAG, "clientSecret: " + clientSecret);
         Log.v(SIGN_IN_TAG, "code: " + code);
-        Log.v(SIGN_IN_TAG, "redirectUrl: " + redirectUrl);
 
         /* ***** STEP 2: Exchange ***** */
 //        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
-//            httpTransport, jsonFactory, clientId, clientSecret, code, redirectUrl)
+//            httpTransport, jsonFactory, clientId, clientSecret, code, redirectUri)
 //                .execute();
 
         GoogleCredential credential = new GoogleCredential.Builder()
             .setTransport(httpTransport)
             .setJsonFactory(jsonFactory)
-            .setClientSecrets(clientId, clientSecret)
+//            .setClientSecrets(clientId, clientSecret)
             .build();
 //            .setFromTokenResponse(tokenResponse);
 
@@ -371,12 +377,12 @@ public class MainActivity extends AppCompatActivity
 //            .execute();
     }
 
-    public void setUpLocationApi() {
+    private void setUpLocationApi() {
         // Initialize the Google Maps location client
         mFusedLocationClient = new FusedLocationProviderClient(this);
     }
 
-    public void setUpGoogleApis() throws IOException {
+    private void setUpGoogleApis() throws IOException {
         // Google Sign-In
         GoogleSignInOptions gso = this.setUpSignInApi();
         // People API
@@ -401,8 +407,21 @@ public class MainActivity extends AppCompatActivity
         this.startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    private void logOut() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+
+        // Remove the user credentials from Shared Preferences
+        editor.remove("user_email");
+        editor.remove("user_google_id");
+        editor.apply();
+
+        // Logged out successfully, show initial UI.
+        this.updateUiOnLogout();
+    }
+
     /** Initiate successful logged in experience */
-    private void updateUI(GoogleSignInAccount account) {
+    private void updateUiOnLogin(GoogleSignInAccount account) {
         if (account != null) {
             SignInButton signInButton = this.findViewById(R.id.sign_in_button);
             Button btnPlay = this.findViewById(R.id.btnPlay);
@@ -434,17 +453,66 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void updateUiOnLogout() {
+        SignInButton signInButton = this.findViewById(R.id.sign_in_button);
+        Button btnPlay = this.findViewById(R.id.btnPlay);
+        Button btnLocation = this.findViewById(R.id.btnLocation);
+
+        ImageView userPhotoImg = this.findViewById(R.id.userPhotoImg);
+        TextView userNameText = this.findViewById(R.id.userNameText);
+        TextView userEmailText = this.findViewById(R.id.userEmailText);
+
+        // Hide the UI buttons and show the sign-in button
+        btnPlay.setVisibility(View.INVISIBLE);
+        btnLocation.setVisibility(View.INVISIBLE);
+        signInButton.setVisibility(View.VISIBLE);
+
+        // Hide drawer toggle
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
+        mDrawerToggle.syncState();
+
+        // Update the profile section in the Navigation Drawer
+        userNameText.setText(R.string.nav_header_title);
+        userEmailText.setText(R.string.nav_header_subtitle);
+        userPhotoImg.setImageResource(R.mipmap.ic_launcher_round);
+
+        String goodbye = getString(R.string.goodbye);
+        Toast.makeText(getApplicationContext(), goodbye, Toast.LENGTH_LONG).show();
+    }
+
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
             // Signed in successfully, show authenticated UI.
-            updateUI(account);
+            this.updateUiOnLogin(account);
+
+            Log.v(SIGN_IN_TAG, "ACCOUNT -> " + new Gson().toJson(account));
+
+            // TODO: assert? if/else? requireNonNull?
+            assert account != null;
+            String email = account.getEmail();
+            String googleId = account.getId();
+
+            // Store the User in the Room DB
+            assert email != null;
+            assert googleId != null;
+            mAppViewModel.insertUser(new User(email, googleId));
+
+            // Store the user ID in the default shared preferences file,
+            // so we know who is the logged user in the rest of the app.
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString("user_email", email);
+            editor.putString("user_google_id", googleId);
+            editor.apply();
+
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.w(SIGN_IN_TAG, "signInResult:failed code=" + e.getStatusCode());
-            updateUI(null);
+            updateUiOnLogin(null);
         }
     }
 

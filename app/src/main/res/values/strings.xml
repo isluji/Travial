@@ -95,7 +95,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
+    <string name="nav_header_desc">User profile</string>
 
     <string name="cv_question_tag">rv-question</string>
     <string name="rg_answers_tag">rg-answers</string>
@@ -104,8 +104,11 @@
     <string name="invalid_email">Not a valid email</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-
-    <!-- TODO: Are these the right URLs/URIs? -->
-    <string name="google_redirect_url">urn:ietf:wg:oauth:2.0:oob</string>
-    <string name="google_scope">https://www.googleapis.com/auth/contacts.readonly</string>
+    <string name="goodbye">Successfully logged out. Goodbye!</string>
+    <string name="nav_tutorial_title">How to play</string>
+    <string name="nav_rankings_title">Rankings</string>
+    <string name="nav_premium_title">Premium</string>
+    <string name="nav_settings_title">Settings</string>
+    <string name="nav_share_title">Share</string>
+    <string name="nav_logout_title">Logout</string>
 </resources>

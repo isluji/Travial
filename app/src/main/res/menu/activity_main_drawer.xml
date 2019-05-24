@@ -3,36 +3,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
+    <!-- TODO: Separate menu items in groups/menus? -->
+
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/nav_tutorial"
             android:icon="@android:drawable/ic_dialog_info"
-            android:title="How to play" />
+            android:title="@string/nav_tutorial_title" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/nav_rankings"
             android:icon="@android:drawable/arrow_up_float"
-            android:title="Rankings" />
+            android:title="@string/nav_rankings_title" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_premium"
             android:icon="@android:drawable/btn_star_big_on"
-            android:title="Premium" />
+            android:title="@string/nav_premium_title" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/nav_settings"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Settings" />
+            android:title="@string/nav_settings_title" />
+        <item
+            android:id="@+id/nav_share"
+            android:icon="@drawable/ic_menu_share"
+            android:title="@string/nav_share_title" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@android:drawable/ic_lock_power_off"
+            android:title="@string/nav_logout_title" />
     </group>
-
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
-
 </menu>

@@ -3,6 +3,7 @@ package com.isluji.travial.data;
 import android.app.Application;
 
 import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.User;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,5 +39,9 @@ public class AppViewModel extends AndroidViewModel {
 
     public TriviaWithQuestions getTrivia(int position) {
         return Objects.requireNonNull( mAllTrivias.getValue() ).get(position);
+    }
+
+    public void insertUser(User newUser) {
+        mRepository.insertUser(newUser);
     }
 }

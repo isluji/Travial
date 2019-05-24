@@ -97,6 +97,6 @@ public class TriviaWithQuestions {
         }
 
         // TODO: Pass the current user email
-        return new TriviaResult(trivia.getId(), "usuario@gmail.com", score);
+        return new TriviaResult(trivia.getId(), "isluji@gmail.com", score);
     }
 }
