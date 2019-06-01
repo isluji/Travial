@@ -26,7 +26,7 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Vi
 
     private final OnListFragmentInteractionListener mListener;
 
-    // Cached copy of the Trivias
+    // Cached copy of the trivias
     private List<TriviaWithQuestions> mTriviaList;
 
     public TriviaListAdapter(OnListFragmentInteractionListener listener) {
@@ -46,16 +46,17 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        TriviaWithQuestions current = mTriviaList.get(position);
+    public void onBindViewHolder(final ViewHolder holder, int position) {
+        holder.mItem = mTriviaList.get(position);
 
+        // TODO: Arreglar esta guarrerida
         int resId = Resources.getSystem().getIdentifier(
                 "mipmap-hdpi/ic_launcher.png", "drawable",
                 Objects.requireNonNull(getClass().getPackage()).getName());
 
-        holder.mTitleView.setText( current.getTrivia().getTitle() );
-        holder.mDifficultyView.setText( current.getTrivia().getDifficulty().toString() );
-        holder.mRelatedPoiView.setImageResource( resId );
+        holder.mTxtTitle.setText( holder.mItem.getTrivia().getTitle() );
+        holder.mTxtDifficulty.setText( holder.mItem.getTrivia().getDifficulty().toString() );
+        holder.mImgRelatedPoi.setImageResource(resId);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,16 +84,18 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Vi
 
     /** Trivia ViewHolder */
     class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView mTitleView;
-        private final TextView mDifficultyView;
-        private final ImageView mRelatedPoiView;
+        private TriviaWithQuestions mItem;
+
+        private final TextView mTxtTitle;
+        private final TextView mTxtDifficulty;
+        private final ImageView mImgRelatedPoi;
 
         private ViewHolder(View itemView) {
             super(itemView);
 
-            mTitleView = itemView.findViewById(R.id.textTitle);
-            mDifficultyView = itemView.findViewById(R.id.textDifficulty);
-            mRelatedPoiView = itemView.findViewById(R.id.imgRelatedPoi);
+            mTxtTitle = itemView.findViewById(R.id.textTitle);
+            mTxtDifficulty = itemView.findViewById(R.id.textDifficulty);
+            mImgRelatedPoi = itemView.findViewById(R.id.imgRelatedPoi);
         }
     }
 }

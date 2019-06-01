@@ -1,13 +1,12 @@
 package com.isluji.travial.model;
 
-import java.util.Date;
-import java.sql.Timestamp;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
+
+import org.threeten.bp.OffsetDateTime;
 
 @Entity(tableName = "trivia_result", foreignKeys =
         {@ForeignKey(entity = Trivia.class,
@@ -30,7 +29,7 @@ public class TriviaResult {
     private double score;
 
     @NonNull
-    private Timestamp timestamp;
+    private OffsetDateTime finishedDate;
 
 
     public TriviaResult(int triviaId, String userEmail, double score) {
@@ -38,7 +37,7 @@ public class TriviaResult {
         this.userEmail = userEmail;
         this.score = score;
 
-        this.timestamp = new Timestamp(new Date().getTime());
+        this.finishedDate = OffsetDateTime.now();
     }
 
 
@@ -77,19 +76,11 @@ public class TriviaResult {
     }
 
     @NonNull
-    public Timestamp getTimestamp() {
-        return timestamp;
+    public OffsetDateTime getFinishedDate() {
+        return finishedDate;
     }
 
-    public void setTimestamp(@NonNull Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
-
-
-    /** Implemented methods */
-
-    public boolean hasPassed() {
-        return false;
-//        return (this.score >= trivia.getPassingScore());
+    public void setFinishedDate(@NonNull OffsetDateTime finishedDate) {
+        this.finishedDate = finishedDate;
     }
 }

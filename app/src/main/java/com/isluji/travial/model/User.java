@@ -1,12 +1,12 @@
 package com.isluji.travial.model;
 
-import java.util.Date;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+
+import org.threeten.bp.OffsetDateTime;
 
 @Entity(indices = @Index(name = "google_id", value = "google_id", unique = true))
 public class User {
@@ -20,7 +20,7 @@ public class User {
 
     @NonNull
     @ColumnInfo(name = "registration_date")
-    private Date registrationDate;
+    private OffsetDateTime registrationDate;
 
     private boolean premium;
 
@@ -29,8 +29,8 @@ public class User {
         this.email = email;
         this.googleId = googleId;
 
-        this.registrationDate = new Date(); // Current date
         this.premium = false;   // False by default
+        this.registrationDate = OffsetDateTime.now(); // Current date
     }
 
 
@@ -59,11 +59,11 @@ public class User {
     }
 
     @NonNull
-    public Date getRegistrationDate() {
+    public OffsetDateTime getRegistrationDate() {
         return registrationDate;
     }
 
-    public void setRegistrationDate(@NonNull Date registrationDate) {
+    public void setRegistrationDate(@NonNull OffsetDateTime registrationDate) {
         this.registrationDate = registrationDate;
     }
 

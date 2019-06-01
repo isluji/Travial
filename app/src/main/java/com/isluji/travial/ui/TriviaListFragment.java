@@ -15,10 +15,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaListAdapter;
-import com.isluji.travial.data.AppViewModel;
+import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.TriviaWithQuestions;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A fragment representing a list of Items.
@@ -29,20 +30,14 @@ import java.util.List;
 public class TriviaListFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
-    private AppViewModel mAppViewModel;
-
-    /**
-     * Mandatory empty constructor for the fragment manager
-     * to instantiate the fragment (e.g. upon screen orientation changes).
-     */
-//    public TriviaListFragment() { }
+    private TriviaViewModel mViewModel;
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      */
     @SuppressWarnings("unused")
-    public static TriviaListFragment newInstance() {
+    static TriviaListFragment newInstance() {
         TriviaListFragment fragment = new TriviaListFragment();
 
 //        Bundle args = new Bundle();
@@ -76,13 +71,15 @@ public class TriviaListFragment extends Fragment {
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            // Get a new or existing ViewModel from the ViewModelProvider.
-            mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+            // Get the shared ViewModel between MainActivity and its fragments
+            mViewModel = ViewModelProviders
+                    .of(Objects.requireNonNull(this.getActivity()))
+                    .get(TriviaViewModel.class);
 
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mAppViewModel.getAllTrivias().observe(this, new Observer<List<TriviaWithQuestions>>() {
+            mViewModel.getAllTrivias().observe(this, new Observer<List<TriviaWithQuestions>>() {
                 @Override
                 public void onChanged(@Nullable final List<TriviaWithQuestions> trivias) {
                     // Update the cached copy of the trivias in the adapter.

@@ -11,6 +11,7 @@ import com.isluji.travial.model.PointOfInterest;
 import com.isluji.travial.model.Trivia;
 import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestion;
+import com.isluji.travial.model.TriviaResult;
 import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
@@ -28,6 +29,9 @@ public interface AppDao {
     long insertTrivia(Trivia trivia);
 
     @Insert
+    long insertResult(TriviaResult result);
+
+    @Insert
     long[] insertQuestions(TriviaQuestion... questions);
 
     @Insert
@@ -35,18 +39,17 @@ public interface AppDao {
 
     // ----------------------------------
 
-    @Query("SELECT * FROM User ORDER BY email ASC")
-    List<User> getAllUsers();
-
-    @Transaction
-    @Query("SELECT * FROM trivia WHERE id = :id")
-    LiveData<TriviaWithQuestions> findTriviaById(int id);
-
     // By default, return order is not guaranteed,
     // and ordering makes testing straightforward.
     @Transaction
     @Query("SELECT * FROM trivia ORDER BY id ASC")
     LiveData<List<TriviaWithQuestions>> getAllTrivias();
+
+    @Query("SELECT * FROM poi ORDER BY id ASC")
+    LiveData<List<PointOfInterest>> getAllPois();
+
+    @Query("SELECT * FROM trivia_result WHERE user_email = :userEmail ORDER BY id ASC")
+    LiveData<List<TriviaResult>> getUserResults(String userEmail);
 
     // ----------------------------------
 
@@ -64,4 +67,7 @@ public interface AppDao {
 
     @Query("DELETE FROM trivia_answer")
     void deleteAllAnswers();
+
+    @Query("DELETE FROM trivia_result")
+    void deleteAllResults();
 }

@@ -10,8 +10,9 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+
+    <string name="permission_rationale">
+        Location permissions are needed for registering locations in order to unlock the trivias
     </string>
 
     <string name="title_activity_login">Sign in</string>
@@ -93,9 +94,9 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">User profile</string>
+    <string name="placeholder_user_name">Android Studio</string>
+    <string name="placeholder_user_email">android.studio@android.com</string>
+    <string name="placeholder_user_desc">User profile</string>
 
     <string name="cv_question_tag">rv-question</string>
     <string name="rg_answers_tag">rg-answers</string>
@@ -106,9 +107,21 @@
     <string name="login_failed">"Login failed"</string>
     <string name="goodbye">Successfully logged out. Goodbye!</string>
     <string name="nav_tutorial_title">How to play</string>
+    <string name="nav_results_title">My results</string>
     <string name="nav_rankings_title">Rankings</string>
     <string name="nav_premium_title">Premium</string>
-    <string name="nav_settings_title">Settings</string>
     <string name="nav_share_title">Share</string>
     <string name="nav_logout_title">Logout</string>
+
+    <string name="trivia_result_message_passed">Congratulations!!!</string>
+    <string name="trivia_result_message_failed">Sorry :( Try again!</string>
+    <string name="trivia_result_passed">PASSED</string>
+    <string name="trivia_result_failed">FAILED</string>
+    <string name="trivia_result_back_btn_text">Back to trivias</string>
+    <string name="trivia_result_list_btn_text">List of results</string>
+
+    <!-- Log tags -->
+    <string name="room_db_name">app-db</string>
+    <string name="google_sign_in_tag">google-sign-in</string>
+    <string name="google_maps_tag">google-maps</string>
 </resources>

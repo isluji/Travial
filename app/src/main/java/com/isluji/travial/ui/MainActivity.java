@@ -35,7 +35,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -50,11 +49,13 @@ import com.google.api.services.people.v1.PeopleService;
 import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.data.AppDatabase;
-import com.isluji.travial.data.AppViewModel;
+import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.misc.TriviaUtils;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
+import com.isluji.travial.model.TriviaResult;
 import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,18 +69,15 @@ public class MainActivity extends AppCompatActivity
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,
         TriviaListFragment.OnListFragmentInteractionListener,
-        TriviaFragment.OnListFragmentInteractionListener {
+        TriviaFragment.OnListFragmentInteractionListener,
+        ResultListFragment.OnListFragmentInteractionListener {
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleSignInClient mGoogleSignInClient;
-    private FusedLocationProviderClient mFusedLocationClient;
     private ActionBarDrawerToggle mDrawerToggle;
     private PeopleService mPeopleService;
 
-    private AppViewModel mAppViewModel;
-
-    private static final String SIGN_IN_TAG = "google-sign-in";
-    private static final int PERMISSION_LOCATION = 11;
+    private TriviaViewModel mViewModel;
     private static final int RC_SIGN_IN = 22;
 
     @Override
@@ -96,15 +94,18 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
+        // Initialize the timezone information
+        AndroidThreeTen.init(this);
+
 
         /* ***** Set up Room DB ***** */
 
         // Get an instance of the created database
         AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-        Log.v("app-db", "Se ha llamado a AppDB.getDatabase()");
+        Log.v(getString(R.string.room_db_name), "Se ha llamado a AppDB.getDatabase()");
 
         // Get a new or existing ViewModel from the ViewModelProvider
-        mAppViewModel = ViewModelProviders.of(this).get(AppViewModel.class);
+        mViewModel = ViewModelProviders.of(this).get(TriviaViewModel.class);
 
 
         /* ***** Set up Navigation Drawer ***** */
@@ -148,7 +149,7 @@ public class MainActivity extends AppCompatActivity
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadPlayFragment();
+                loadTriviaListFragment();
             }
         });
 
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadMapsFragment();
+                loadMapsActivity();
             }
         });
 
@@ -244,12 +245,12 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_tutorial) {
-            // Handle the camera action
+            this.loadTutorialFragment();
+        } else if (id == R.id.nav_results) {
+            this.loadResultListFragment();
         } else if (id == R.id.nav_rankings) {
 
         } else if (id == R.id.nav_premium) {
-
-        } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_share) {
 
@@ -285,12 +286,17 @@ public class MainActivity extends AppCompatActivity
         // TODO?
     }
 
+    @Override   // Listener method for ResultListFragment
+    public void onListFragmentInteraction(TriviaResult item) {
+        // TODO?
+    }
+
     public void onSendButtonClicked(View view) {
         List<Fragment> fragments = this.getSupportFragmentManager().getFragments();
         TriviaFragment triviaFragment = (TriviaFragment) fragments.get(fragments.size() - 1);
 
         RecyclerView rvQuestions = view.getRootView().findViewById(R.id.rvQuestions);
-        TriviaWithQuestions twq = mAppViewModel.getTrivia(triviaFragment.getSelectedTriviaPosition());
+        TriviaWithQuestions twq = mViewModel.getSelectedTrivia();
 
         // Set the 'selected' field of all the answers to true or false
         twq.storeChoices(rvQuestions);
@@ -342,7 +348,8 @@ public class MainActivity extends AppCompatActivity
             new GoogleBrowserClientRequestUrl(clientId, redirectUri, Arrays.asList(scope))
                 .build();
 
-        Log.v(SIGN_IN_TAG, "authorizationUrl: " + authorizationUrl);
+        Log.v(getString(R.string.google_sign_in_tag),
+                "authorizationUrl: " + authorizationUrl);
 
         // Point or redirect your user to the authorizationUrl.
         System.out.println("Go to the following link in your browser:");
@@ -353,7 +360,7 @@ public class MainActivity extends AppCompatActivity
         System.out.println("What is the authorization code?");
         String code = in.readLine();
 
-        Log.v(SIGN_IN_TAG, "code: " + code);
+        Log.v(getString(R.string.google_sign_in_tag), "code: " + code);
 
         /* ***** STEP 2: Exchange ***** */
 //        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
@@ -377,18 +384,11 @@ public class MainActivity extends AppCompatActivity
 //            .execute();
     }
 
-    private void setUpLocationApi() {
-        // Initialize the Google Maps location client
-        mFusedLocationClient = new FusedLocationProviderClient(this);
-    }
-
     private void setUpGoogleApis() throws IOException {
         // Google Sign-In
         GoogleSignInOptions gso = this.setUpSignInApi();
         // People API
         this.setUpPeopleApi();
-        // Google Maps
-        this.setUpLocationApi();
 
         // Initialize the Google Play Services client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -449,7 +449,8 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
         } else {
             // TODO: 'account' is null when no user has signed in before
-            Log.v(SIGN_IN_TAG, "No user has signed in before");
+            Log.v(getString(R.string.google_sign_in_tag),
+                    "No user has signed in before");
         }
     }
 
@@ -472,8 +473,8 @@ public class MainActivity extends AppCompatActivity
         mDrawerToggle.syncState();
 
         // Update the profile section in the Navigation Drawer
-        userNameText.setText(R.string.nav_header_title);
-        userEmailText.setText(R.string.nav_header_subtitle);
+        userNameText.setText(R.string.placeholder_user_name);
+        userEmailText.setText(R.string.placeholder_user_email);
         userPhotoImg.setImageResource(R.mipmap.ic_launcher_round);
 
         String goodbye = getString(R.string.goodbye);
@@ -487,7 +488,8 @@ public class MainActivity extends AppCompatActivity
             // Signed in successfully, show authenticated UI.
             this.updateUiOnLogin(account);
 
-            Log.v(SIGN_IN_TAG, "ACCOUNT -> " + new Gson().toJson(account));
+            Log.v(getString(R.string.google_sign_in_tag),
+                    "ACCOUNT -> " + new Gson().toJson(account));
 
             // TODO: assert? if/else? requireNonNull?
             assert account != null;
@@ -497,7 +499,7 @@ public class MainActivity extends AppCompatActivity
             // Store the User in the Room DB
             assert email != null;
             assert googleId != null;
-            mAppViewModel.insertUser(new User(email, googleId));
+            mViewModel.insertUser(new User(email, googleId));
 
             // Store the user ID in the default shared preferences file,
             // so we know who is the logged user in the rest of the app.
@@ -511,7 +513,9 @@ public class MainActivity extends AppCompatActivity
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(SIGN_IN_TAG, "signInResult:failed code=" + e.getStatusCode());
+            Log.w(getString(R.string.google_sign_in_tag),
+                    "signInResult:failed code=" + e.getStatusCode());
+
             updateUiOnLogin(null);
         }
     }
@@ -519,35 +523,50 @@ public class MainActivity extends AppCompatActivity
 
     /* ***** Methods to load the fragments ***** */
 
-    public void loadPlayFragment() {
+    public void loadTriviaListFragment() {
         this.getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.app_bar_main, new TriviaListFragment())
-                .addToBackStack(null)
-                .commit();
-    }
-
-    public void loadMapsFragment() {
-        this.getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.app_bar_main, new MapsFragment())
-                .addToBackStack(null)
-                .commit();
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new TriviaListFragment())
+            .addToBackStack(null)
+            .commit();
     }
 
     public void loadTriviaFragment(int position) {
+        mViewModel.setSelectedTriviaPosition(position);
+
         this.getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.app_bar_main, TriviaFragment.newInstance(position))
-                .addToBackStack(null)
-                .commit();
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new TriviaFragment())
+            .addToBackStack(null)
+            .commit();
     }
 
     public void loadTriviaResultFragment() {
         this.getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.app_bar_main, TriviaResultFragment.newInstance())
-                .addToBackStack(null)
-                .commit();
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new ResultFragment())
+            .addToBackStack(null)
+            .commit();
+    }
+
+    private void loadResultListFragment() {
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new ResultListFragment())
+            .addToBackStack(null)
+            .commit();
+    }
+
+    private void loadTutorialFragment() {
+        this.getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.app_bar_main, new TutorialFragment())
+            .addToBackStack(null)
+            .commit();
+    }
+
+    public void loadMapsActivity() {
+        Intent intent = new Intent(this, MapsActivity.class);
+        this.startActivity(intent);
     }
 }

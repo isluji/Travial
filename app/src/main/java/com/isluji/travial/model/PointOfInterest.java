@@ -29,7 +29,7 @@ public class PointOfInterest {
     @ColumnInfo(name = "open_to_public")
     private boolean openToPublic;
 
-    private String image;
+    private int imageId;
 
     @Embedded
     private PoiLocation location;
@@ -37,13 +37,13 @@ public class PointOfInterest {
 
     public PointOfInterest(@NonNull String name, PoiType type, String author,
                            int finishingYear, boolean openToPublic,
-                           String image, PoiLocation location) {
+                           int imageId, PoiLocation location) {
         this.name = name;
         this.type = type;
         this.author = author;
         this.finishingYear = finishingYear;
         this.openToPublic = openToPublic;
-        this.image = image;
+        this.imageId = imageId;
         this.location = location;
     }
 
@@ -99,12 +99,12 @@ public class PointOfInterest {
         this.openToPublic = openToPublic;
     }
 
-    public String getImage() {
-        return image;
+    public int getImageId() {
+        return imageId;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setImageId(int imageId) {
+        this.imageId = imageId;
     }
 
     public PoiLocation getLocation() {

@@ -1,5 +1,8 @@
 package com.isluji.travial.model;
 
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -48,6 +51,10 @@ public class TriviaWithQuestions {
         this.questions = questions;
     }
 
+    public int getId() {
+        return this.getTrivia().getId();
+    }
+
 
     /* ******** Implemented methods ******** */
 
@@ -61,11 +68,11 @@ public class TriviaWithQuestions {
         return maxScore;
     }
 
-    public boolean isValidScore(int score) {
+    public boolean isValidScore(double score) {
         return ( (score >= 0) && (score <= this.getMaxScore()) );
     }
 
-    public boolean isPassed(int score) {
+    public boolean isPassed(double score) {
         return (score >= trivia.getPassingScore());
     }
 
@@ -79,24 +86,13 @@ public class TriviaWithQuestions {
             RadioGroup rgOptions = cvQuestion.findViewWithTag(rv.getContext().getString(R.string.rg_answers_tag));
             RadioButton rbSelected = cvQuestion.findViewById(rgOptions.getCheckedRadioButtonId());
 
-            for (TriviaAnswer answer: qwa.getAnswers()) {
-                answer.setSelected( answer.getText().contentEquals(rbSelected.getText()) );
-            }
-        }
-    }
-
-    public TriviaResult evaluate() {
-        double score = 0;
-
-        for (TriviaQuestionWithAnswers qwa: questions) {
-            for (TriviaAnswer answer: qwa.getAnswers()) {
-                if (answer.isSelected() && answer.isCorrect()) {
-                    score += qwa.getQuestion().getScore();
+            for (TriviaAnswer answer : qwa.getAnswers()) {
+                if (rbSelected != null) {
+                    answer.setSelected(answer.getText().contentEquals(rbSelected.getText()));
+                } else {
+                    answer.setSelected(false);
                 }
             }
         }
-
-        // TODO: Pass the current user email
-        return new TriviaResult(trivia.getId(), "isluji@gmail.com", score);
     }
 }

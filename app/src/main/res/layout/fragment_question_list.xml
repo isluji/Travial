@@ -12,7 +12,7 @@
     android:paddingBottom="8dp"
     android:background="@android:color/darker_gray"
 
-    android:name="com.isluji.travial.fragments.QuestionFragment"
+    android:name="com.isluji.travial.ui.TriviaFragment"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     tools:context=".ui.TriviaFragment"
     tools:listitem="@layout/fragment_question_item" />

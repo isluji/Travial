@@ -8,29 +8,28 @@
     android:layout_marginTop="64dp"
     android:paddingBottom="8dp"
     android:background="@android:color/darker_gray"
-    tools:context=".ui.TriviaResultFragment">
+    tools:context=".ui.ResultFragment">
 
     <TextView
-        android:id="@+id/resultScore"
+        android:id="@+id/txtMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Congratulations!!!"
+        android:text="Message"
         android:textAlignment="center"
-        android:textColor="@android:color/holo_green_dark"
         android:textSize="30sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/resultNotice"
+        android:id="@+id/txtScore"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="PASSED (5/10)"
+        android:text="Score (s/max)"
         android:textAlignment="center"
         android:textSize="24sp"
         android:textStyle="bold" />
 
     <ImageView
-        android:id="@+id/resultImg"
+        android:id="@+id/imgResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@mipmap/trivia_passed" />
@@ -41,18 +40,18 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Back to main" />
+            android:text="@string/trivia_result_back_btn_text" />
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/btnResults"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="List of results" />
+            android:text="@string/trivia_result_list_btn_text" />
     </LinearLayout>
 
 </LinearLayout>

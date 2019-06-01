@@ -1,23 +1,24 @@
 package com.isluji.travial.ui;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.isluji.travial.R;
-import com.isluji.travial.adapters.TriviaAdapter;
+import com.isluji.travial.adapters.ResultListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.model.TriviaQuestionWithAnswers;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.TriviaResult;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +29,7 @@ import java.util.Objects;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class TriviaFragment extends Fragment {
+public class ResultListFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
     private TriviaViewModel mViewModel;
@@ -38,26 +39,38 @@ public class TriviaFragment extends Fragment {
      * this fragment using the provided parameters.
      */
     @SuppressWarnings("unused")
-    static TriviaFragment newInstance() {
-        TriviaFragment fragment = new TriviaFragment();
+    static ResultListFragment newInstance() {
+        ResultListFragment fragment = new ResultListFragment();
 
 //        Bundle args = new Bundle();
-//        args.putInt(SELECTED_TRIVIA_POSITION, position);
+//        args.putInt("columnCount", columnCount);
 //        fragment.setArguments(args);
 
         return fragment;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_question_list, container, false);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+//        if (getArguments() != null) {
+//            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+//        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_result_list, container, false);
+
+        /* ***** RecyclerView and Adapter code ***** */
 
         if (view instanceof RecyclerView) {
-
+            // TODO? Si falla, cambiar "context" por "this.getActivity()" en los dos últimos métodos
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
-            final TriviaAdapter adapter = new TriviaAdapter();
 
+            final ResultListAdapter adapter = new ResultListAdapter(mListener);
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
@@ -66,16 +79,18 @@ public class TriviaFragment extends Fragment {
                     .of(Objects.requireNonNull(this.getActivity()))
                     .get(TriviaViewModel.class);
 
+            // Get the current user's email address
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+            String userEmail = sharedPrefs.getString("user_email", this.getString(R.string.placeholder_user_email));
+
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mViewModel.getAllTrivias().observe(this, new Observer<List<TriviaWithQuestions>>() {
+            mViewModel.getUserResults(userEmail).observe(this, new Observer<List<TriviaResult>>() {
                 @Override
-                public void onChanged(final List<TriviaWithQuestions> trivias) {
-                    // Update the cached copy of the selected trivia in the adapter.
-                    adapter.setSelectedTrivia(
-                            trivias.get(mViewModel.getSelectedTriviaPosition())
-                    );
+                public void onChanged(@Nullable final List<TriviaResult> userResults) {
+                    // Update the cached copy of the trivias in the adapter.
+                    adapter.setResults(userResults);
                 }
             });
         }
@@ -103,7 +118,6 @@ public class TriviaFragment extends Fragment {
         mListener = null;
     }
 
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -116,7 +130,6 @@ public class TriviaFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(TriviaQuestionWithAnswers question);
+        void onListFragmentInteraction(TriviaResult item);
     }
-
 }

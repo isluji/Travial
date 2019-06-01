@@ -3,23 +3,27 @@ package com.isluji.travial.misc;
 import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;
 
-import java.util.Date;
-
 import androidx.room.TypeConverter;
+
+import org.threeten.bp.OffsetDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
 
 public class Converters {
 
-    // Date <-> Long (Timestamp)
+    // OffsetDateTime (ThreeTenABP) <-> String
+
+    private static DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @TypeConverter
-    public static Date timestampToDate(Long value) {
-        return value == null ? null : new Date(value);
+    public static OffsetDateTime toOffsetDateTime(String value) {
+        return formatter.parse(value, OffsetDateTime.FROM);
     }
 
     @TypeConverter
-    public static Long dateToTimestamp(Date date) {
-        return date == null ? null : date.getTime();
+    public static String fromOffsetDateTime(OffsetDateTime date) {
+        return date.format(formatter);
     }
+
 
     // PoiType (enum) <-> String
 

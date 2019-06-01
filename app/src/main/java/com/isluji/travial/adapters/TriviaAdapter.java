@@ -16,8 +16,6 @@ import com.isluji.travial.model.TriviaAnswer;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
 import com.isluji.travial.model.TriviaWithQuestions;
 
-import java.util.Collections;
-
 /**
  * {@link RecyclerView.Adapter} that can display a {@link TriviaQuestionWithAnswers} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
@@ -63,19 +61,19 @@ public class TriviaAdapter extends RecyclerView.Adapter<TriviaAdapter.ViewHolder
         // Only obtain the currently selected trivia when
         // the list isn't empty and it's not the footer item
         if ( (getItemCount() > 1) && (getItemViewType(position) == VIEW_TYPE_ITEM) ) {
-            TriviaQuestionWithAnswers current = mSelectedTrivia.getQuestions().get(position);
+            holder.mItem = mSelectedTrivia.getQuestions().get(position);
 
-            holder.mPositionView.setText(String.valueOf(position + 1) + '.');
-            holder.mStatementView.setText(current.getQuestion().getStatement());
-            holder.mScoreView.setText(String.valueOf(current.getQuestion().getScore()));
+            holder.mTxtPosition.setText(String.valueOf(position + 1) + '.');
+            holder.mTxtStatement.setText( holder.mItem.getQuestion().getStatement() );
+            holder.mTxtScore.setText( String.valueOf(holder.mItem.getQuestion().getScore()) );
 
-            RadioButton option1 = (RadioButton) holder.mAnswerGroup.getChildAt(0);
-            RadioButton option2 = (RadioButton) holder.mAnswerGroup.getChildAt(1);
-            RadioButton option3 = (RadioButton) holder.mAnswerGroup.getChildAt(2);
+            RadioButton option1 = (RadioButton) holder.mRgAnswers.getChildAt(0);
+            RadioButton option2 = (RadioButton) holder.mRgAnswers.getChildAt(1);
+            RadioButton option3 = (RadioButton) holder.mRgAnswers.getChildAt(2);
 
-            TriviaAnswer answer1 = current.getAnswers().get(0);
-            TriviaAnswer answer2 = current.getAnswers().get(1);
-            TriviaAnswer answer3 = current.getAnswers().get(2);
+            TriviaAnswer answer1 = holder.mItem.getAnswers().get(0);
+            TriviaAnswer answer2 = holder.mItem.getAnswers().get(1);
+            TriviaAnswer answer3 = holder.mItem.getAnswers().get(2);
 
             option1.setText(answer1.getText());
             option2.setText(answer2.getText());
@@ -115,19 +113,20 @@ public class TriviaAdapter extends RecyclerView.Adapter<TriviaAdapter.ViewHolder
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        // TODO: Design Question card and declare here the views
-        private final TextView mPositionView;
-        private final TextView mStatementView;
-        private final TextView mScoreView;
-        private final RadioGroup mAnswerGroup;
+        private TriviaQuestionWithAnswers mItem;
+
+        private final TextView mTxtPosition;
+        private final TextView mTxtStatement;
+        private final TextView mTxtScore;
+        private final RadioGroup mRgAnswers;
 
         private ViewHolder(View view) {
             super(view);
 
-            mPositionView = view.findViewById(R.id.textPosition);
-            mStatementView = view.findViewById(R.id.textStatement);
-            mScoreView = view.findViewById(R.id.textScore);
-            mAnswerGroup = view.findViewById(R.id.rgAnswers);
+            mTxtPosition = view.findViewById(R.id.textPosition);
+            mTxtStatement = view.findViewById(R.id.textStatement);
+            mTxtScore = view.findViewById(R.id.textScore);
+            mRgAnswers = view.findViewById(R.id.rgAnswers);
         }
     }
 }

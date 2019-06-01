@@ -11,6 +11,10 @@
             android:icon="@android:drawable/ic_dialog_info"
             android:title="@string/nav_tutorial_title" />
         <item
+            android:id="@+id/nav_results"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/nav_results_title" />
+        <item
             android:id="@+id/nav_rankings"
             android:icon="@android:drawable/arrow_up_float"
             android:title="@string/nav_rankings_title" />
@@ -18,10 +22,6 @@
             android:id="@+id/nav_premium"
             android:icon="@android:drawable/btn_star_big_on"
             android:title="@string/nav_premium_title" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="@string/nav_settings_title" />
         <item
             android:id="@+id/nav_share"
             android:icon="@drawable/ic_menu_share"
