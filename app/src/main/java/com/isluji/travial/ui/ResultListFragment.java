@@ -76,12 +76,14 @@ public class ResultListFragment extends Fragment {
 
             // Get the shared ViewModel between MainActivity and its fragments
             mViewModel = ViewModelProviders
-                    .of(Objects.requireNonNull(this.getActivity()))
+                    .of(Objects.requireNonNull(this.getActivity())) // TODO?
                     .get(TriviaViewModel.class);
 
             // Get the current user's email address
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-            String userEmail = sharedPrefs.getString("user_email", this.getString(R.string.placeholder_user_email));
+            SharedPreferences sharedPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(this.getActivity().getApplicationContext());
+            String userEmail = sharedPrefs.getString("user_email",
+                    this.getString(R.string.placeholder_user_email));
 
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes

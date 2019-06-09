@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 6,
-    "identityHash": "3fadaf48dcb7fcd9a6335431e97baf55",
+    "version": 7,
+    "identityHash": "7480d0ba3862a82a642e3ac963ba967f",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`email` TEXT NOT NULL, `google_id` TEXT NOT NULL, `registration_date` TEXT NOT NULL, `premium` INTEGER NOT NULL, PRIMARY KEY(`email`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`email` TEXT NOT NULL, `google_id` TEXT NOT NULL, `registration_date` TEXT NOT NULL, `unblocked_poi_ids` TEXT, `premium` INTEGER NOT NULL, PRIMARY KEY(`email`))",
         "fields": [
           {
             "fieldPath": "email",
@@ -25,6 +25,12 @@
             "columnName": "registration_date",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "unblockedPoiIds",
+            "columnName": "unblocked_poi_ids",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "premium",
@@ -309,7 +315,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"3fadaf48dcb7fcd9a6335431e97baf55\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"7480d0ba3862a82a642e3ac963ba967f\")"
     ]
   }
 }

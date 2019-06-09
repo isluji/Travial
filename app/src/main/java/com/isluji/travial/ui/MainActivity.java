@@ -46,9 +46,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.people.v1.PeopleService;
-import com.google.gson.Gson;
 import com.isluji.travial.R;
-import com.isluji.travial.data.AppDatabase;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.misc.TriviaUtils;
 import com.isluji.travial.model.TriviaQuestionWithAnswers;
@@ -63,6 +61,7 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -72,13 +71,17 @@ public class MainActivity extends AppCompatActivity
         TriviaFragment.OnListFragmentInteractionListener,
         ResultListFragment.OnListFragmentInteractionListener {
 
-    private GoogleApiClient mGoogleApiClient;
-    private GoogleSignInClient mGoogleSignInClient;
-    private ActionBarDrawerToggle mDrawerToggle;
-    private PeopleService mPeopleService;
+    private static final int RC_SIGN_IN = 22;
+
+    private GoogleApiClient mGoogleClient;
+    private PeopleService mPeopleClient;
+    private GoogleSignInClient mSignInClient;
+    private GoogleSignInAccount mGoogleAccount;
 
     private TriviaViewModel mViewModel;
-    private static final int RC_SIGN_IN = 22;
+
+    private ActionBarDrawerToggle mDrawerToggle;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,46 +97,21 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        // Initialize the timezone information
+        // Initialize timezone information
+        // https://medium.com/androiddevelopers/room-time-2b4cf9672b98
         AndroidThreeTen.init(this);
-
-
-        /* ***** Set up Room DB ***** */
-
-        // Get an instance of the created database
-        AppDatabase db = AppDatabase.getDatabase(getApplicationContext());
-        Log.v(getString(R.string.room_db_name), "Se ha llamado a AppDB.getDatabase()");
 
         // Get a new or existing ViewModel from the ViewModelProvider
         mViewModel = ViewModelProviders.of(this).get(TriviaViewModel.class);
 
-
-        /* ***** Set up Navigation Drawer ***** */
+        // Set up the Navigation Drawer layout
+        this.setUpNavigationDrawer();
 
         // Create variables for the view elements
         Button btnPlay = this.findViewById(R.id.btnPlay);
         Button btnLocation = this.findViewById(R.id.btnLocation);
-        SignInButton btnSignIn = findViewById(R.id.sign_in_button);
-
-        DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
-        NavigationView navView = this.findViewById(R.id.nav_view);
-        Toolbar toolbar = this.findViewById(R.id.toolbar);
         FloatingActionButton fab = this.findViewById(R.id.fab);
-
-        // Set the toolbar
-        this.setSupportActionBar(toolbar);
-
-        // Set the drawer toggle
-        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(mDrawerToggle);
-
-        mDrawerToggle.setDrawerIndicatorEnabled(false);
-        mDrawerToggle.syncState();
-
-        // Set the navigation view
-        navView.setNavigationItemSelectedListener(this);
-
+        SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
 
         /* ***** Event listeners ***** */
 
@@ -175,20 +153,34 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
-        // Check for existing Google Sign-In account.
-        // (If the user is already signed in, 'account' will be non-null.)
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        // Check for existing Google Sign-In mGoogleAccount.
+        // (If the user is already signed in, 'mGoogleAccount' will be non-null.)
+        mGoogleAccount = GoogleSignIn.getLastSignedInAccount(this);
 
-        // account != null
-        // -> The user has already signed in to your app with Google.
-        // -> Update your UI accordingly for your app.
-//        if (account != null) {
-//            updateUiOnLogin(account);
-//        }
+        // Update your UI accordingly for your app.
+        this.updateUiOnUserChange();
+    }
 
-        // account == null
-        // -> The user has not yet signed in to your app with Google.
-        // -> Display the Google Sign-in button.
+    private void setUpNavigationDrawer() {
+        // Initialize Navigation Drawer variables
+        NavigationView navView = this.findViewById(R.id.nav_view);
+        DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
+        Toolbar toolbar = this.findViewById(R.id.toolbar);
+
+        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        // Set the toolbar
+        this.setSupportActionBar(toolbar);
+
+        // Set the drawer toggle
+        drawer.addDrawerListener(mDrawerToggle);
+
+//        mDrawerToggle.setDrawerIndicatorEnabled(false);
+//        mDrawerToggle.syncState();
+
+        // Set the navigation view
+        navView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -199,7 +191,8 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == RC_SIGN_IN) {
             // The Task returned from this call is always completed
             // (no need to attach a listener.)
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            Task<GoogleSignInAccount> task = GoogleSignIn
+                    .getSignedInAccountFromIntent(data);
             this.handleSignInResult(task);
         }
     }
@@ -240,22 +233,32 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // TODO: Handle navigation view item clicks here.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            case R.id.nav_tutorial:
+                this.loadTutorialFragment();
+                break;
 
-        if (id == R.id.nav_tutorial) {
-            this.loadTutorialFragment();
-        } else if (id == R.id.nav_results) {
-            this.loadResultListFragment();
-        } else if (id == R.id.nav_rankings) {
+            case R.id.nav_results:
+                this.loadResultListFragment();
+                break;
 
-        } else if (id == R.id.nav_premium) {
+            case R.id.nav_rankings:
+                // TODO
+                break;
 
-        } else if (id == R.id.nav_share) {
+            case R.id.nav_premium:
+                // TODO
+                break;
 
-        } else if (id == R.id.nav_logout) {
-            this.logOut();
+            case R.id.nav_share:
+                // TODO
+                break;
+
+            case R.id.nav_logout:
+                this.logOut();
+                break;
         }
 
         // Close the drawer when the action is done
@@ -263,15 +266,6 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*TODO?*/}
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {/*TODO?*/}
-
-    @Override
-    public void onConnectionSuspended(int i) {/*TODO?*/}
 
 
     /* ***** Event listeners ***** */
@@ -292,9 +286,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onSendButtonClicked(View view) {
-        List<Fragment> fragments = this.getSupportFragmentManager().getFragments();
-        TriviaFragment triviaFragment = (TriviaFragment) fragments.get(fragments.size() - 1);
-
         RecyclerView rvQuestions = view.getRootView().findViewById(R.id.rvQuestions);
         TriviaWithQuestions twq = mViewModel.getSelectedTrivia();
 
@@ -326,7 +317,7 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         // Build a GoogleSignInClient with the options specified by 'gso'
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        mSignInClient = GoogleSignIn.getClient(this, gso);
 
         return gso;
     }
@@ -374,7 +365,7 @@ public class MainActivity extends AppCompatActivity
             .build();
 //            .setFromTokenResponse(tokenResponse);
 
-        mPeopleService = new PeopleService.Builder(
+        mPeopleClient = new PeopleService.Builder(
             httpTransport, jsonFactory, credential)
                 .build();
 
@@ -384,14 +375,15 @@ public class MainActivity extends AppCompatActivity
 //            .execute();
     }
 
+    // Collection method to set up all APIs
     private void setUpGoogleApis() throws IOException {
         // Google Sign-In
         GoogleSignInOptions gso = this.setUpSignInApi();
         // People API
-        this.setUpPeopleApi();
+//        this.setUpPeopleApi();
 
         // Initialize the Google Play Services client
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
@@ -403,120 +395,142 @@ public class MainActivity extends AppCompatActivity
     /* ***** Methods for Google Sign-In ***** */
 
     private void signIn() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        Intent signInIntent = mSignInClient.getSignInIntent();
         this.startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     private void logOut() {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        SharedPreferences sharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getApplicationContext());
 
         // Remove the user credentials from Shared Preferences
-        editor.remove("user_email");
-        editor.remove("user_google_id");
-        editor.apply();
+        sharedPrefs.edit()
+                .remove("user_email")
+                .remove("user_google_id")
+                .remove("user_poi_ids")
+                .apply();
+
+        // Reset the Google Account object
+        mGoogleAccount = null;
 
         // Logged out successfully, show initial UI.
-        this.updateUiOnLogout();
-    }
-
-    /** Initiate successful logged in experience */
-    private void updateUiOnLogin(GoogleSignInAccount account) {
-        if (account != null) {
-            SignInButton signInButton = this.findViewById(R.id.sign_in_button);
-            Button btnPlay = this.findViewById(R.id.btnPlay);
-            Button btnLocation = this.findViewById(R.id.btnLocation);
-
-            ImageView userPhotoImg = this.findViewById(R.id.userPhotoImg);
-            TextView userNameText = this.findViewById(R.id.userNameText);
-            TextView userEmailText = this.findViewById(R.id.userEmailText);
-
-            // Hide the sign-in button and unveil the UI buttons
-            signInButton.setVisibility(View.INVISIBLE);
-            btnPlay.setVisibility(View.VISIBLE);
-            btnLocation.setVisibility(View.VISIBLE);
-
-            // Reveal drawer toggle
-            mDrawerToggle.setDrawerIndicatorEnabled(true);
-            mDrawerToggle.syncState();
-
-            // Update the profile section in the Navigation Drawer
-            userNameText.setText(account.getDisplayName());
-            userEmailText.setText(account.getEmail());
-            userPhotoImg.setImageURI(account.getPhotoUrl());
-
-            String welcome = getString(R.string.welcome) + account.getDisplayName();
-            Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
-        } else {
-            // TODO: 'account' is null when no user has signed in before
-            Log.v(getString(R.string.google_sign_in_tag),
-                    "No user has signed in before");
-        }
-    }
-
-    private void updateUiOnLogout() {
-        SignInButton signInButton = this.findViewById(R.id.sign_in_button);
-        Button btnPlay = this.findViewById(R.id.btnPlay);
-        Button btnLocation = this.findViewById(R.id.btnLocation);
-
-        ImageView userPhotoImg = this.findViewById(R.id.userPhotoImg);
-        TextView userNameText = this.findViewById(R.id.userNameText);
-        TextView userEmailText = this.findViewById(R.id.userEmailText);
-
-        // Hide the UI buttons and show the sign-in button
-        btnPlay.setVisibility(View.INVISIBLE);
-        btnLocation.setVisibility(View.INVISIBLE);
-        signInButton.setVisibility(View.VISIBLE);
-
-        // Hide drawer toggle
-        mDrawerToggle.setDrawerIndicatorEnabled(false);
-        mDrawerToggle.syncState();
-
-        // Update the profile section in the Navigation Drawer
-        userNameText.setText(R.string.placeholder_user_name);
-        userEmailText.setText(R.string.placeholder_user_email);
-        userPhotoImg.setImageResource(R.mipmap.ic_launcher_round);
+        this.updateUiOnUserChange();
 
         String goodbye = getString(R.string.goodbye);
         Toast.makeText(getApplicationContext(), goodbye, Toast.LENGTH_LONG).show();
     }
 
+    private void updateUiOnUserChange() {
+        // User has already signed in to your app
+        if (mGoogleAccount != null) {
+            // Shows the normal UX for an authenticated user
+            this.updateUiOnLogin();
+
+        // User has not yet signed in or has logged out
+        } else {
+            // Restores the initial UI state
+            // (displays the Google Sign-In button, among other changes)
+            this.updateUiOnLogout();
+        }
+    }
+
+    private void updateUiOnLogin() {
+        Button btnPlay = this.findViewById(R.id.btnPlay);
+        Button btnLocation = this.findViewById(R.id.btnLocation);
+        SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
+
+        TextView userNameText = this.findViewById(R.id.userNameText);
+        TextView userEmailText = this.findViewById(R.id.userEmailText);
+        ImageView userPhotoImg = this.findViewById(R.id.userPhotoImg);
+
+        // Hide the sign-in button and unveil the UI buttons
+        btnSignIn.setVisibility(View.INVISIBLE);
+        btnPlay.setVisibility(View.VISIBLE);
+        btnLocation.setVisibility(View.VISIBLE);
+
+        // Reveal drawer toggle
+//        mDrawerToggle.setDrawerIndicatorEnabled(true);
+//        mDrawerToggle.syncState();
+
+        // Update the profile section in the Navigation Drawer
+        if (userNameText != null && userEmailText != null && userPhotoImg != null) {
+            userNameText.setText(mGoogleAccount.getDisplayName());
+            userEmailText.setText(mGoogleAccount.getEmail());
+            userPhotoImg.setImageURI(mGoogleAccount.getPhotoUrl());
+        }
+    }
+
+    private void updateUiOnLogout() {
+        Button btnPlay = this.findViewById(R.id.btnPlay);
+        Button btnLocation = this.findViewById(R.id.btnLocation);
+        SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
+
+        TextView userNameText = this.findViewById(R.id.userNameText);
+        TextView userEmailText = this.findViewById(R.id.userEmailText);
+        ImageView userPhotoImg = this.findViewById(R.id.userPhotoImg);
+
+        // Hide the UI buttons and show the sign-in button
+        btnPlay.setVisibility(View.INVISIBLE);
+        btnLocation.setVisibility(View.INVISIBLE);
+        btnSignIn.setVisibility(View.VISIBLE);
+
+        // Hide drawer toggle
+//        mDrawerToggle.setDrawerIndicatorEnabled(false);
+//        mDrawerToggle.syncState();
+
+        // Update the profile section in the Navigation Drawer
+        if (userNameText != null && userEmailText != null && userPhotoImg != null) {
+            userNameText.setText(R.string.placeholder_user_name);
+            userEmailText.setText(R.string.placeholder_user_email);
+            userPhotoImg.setImageResource(R.mipmap.ic_launcher_round);
+        }
+    }
+
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            mGoogleAccount = completedTask.getResult(ApiException.class);
 
-            // Signed in successfully, show authenticated UI.
-            this.updateUiOnLogin(account);
+            // Signed in successfully -> Show authenticated UI
+            this.updateUiOnUserChange();
+
+            String email = mGoogleAccount.getEmail();
+            String googleId = mGoogleAccount.getId();
 
             Log.v(getString(R.string.google_sign_in_tag),
-                    "ACCOUNT -> " + new Gson().toJson(account));
+                    "email: " + email + " | googleId: " + googleId);
 
-            // TODO: assert? if/else? requireNonNull?
-            assert account != null;
-            String email = account.getEmail();
-            String googleId = account.getId();
+            if (email != null && googleId != null) {
+                // Show welcome message
+                String welcome = getString(R.string.welcome) + mGoogleAccount.getDisplayName();
+                Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
 
-            // Store the User in the Room DB
-            assert email != null;
-            assert googleId != null;
-            mViewModel.insertUser(new User(email, googleId));
+                // If user exists, retrieve its data from the DB.
+                // If he wasn't registered, insert a new user in the DB.
+                User user = mViewModel.createOrRetrieveUser(email, googleId);
 
-            // Store the user ID in the default shared preferences file,
-            // so we know who is the logged user in the rest of the app.
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+                // Store the user ID in the default shared preferences file,
+                // so we know who is the logged user in the rest of the app.
+                SharedPreferences sharedPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(this.getApplicationContext());
 
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putString("user_email", email);
-            editor.putString("user_google_id", googleId);
-            editor.apply();
+                sharedPrefs.edit()
+                        .putString("user_email", email)
+                        .putString("user_google_id", googleId)
+                        .putStringSet("user_poi_ids", user.getUnblockedPoiIds())
+                        .apply();
+            }
+        } catch (Exception e) {
+            if (e instanceof ApiException) {
+                // The ApiException status code indicates the detailed failure reason.
+                // Please refer to the GoogleSignInStatusCodes class reference for more information.
+                Log.w(getString(R.string.google_sign_in_tag), "signInResult:failed code="
+                        + ((ApiException) e).getStatusCode());
+            } else {
+                e.printStackTrace();
+            }
 
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(getString(R.string.google_sign_in_tag),
-                    "signInResult:failed code=" + e.getStatusCode());
-
-            updateUiOnLogin(null);
+            mGoogleAccount = null;
+            this.updateUiOnUserChange();
         }
     }
 
@@ -568,5 +582,22 @@ public class MainActivity extends AppCompatActivity
     public void loadMapsActivity() {
         Intent intent = new Intent(this, MapsActivity.class);
         this.startActivity(intent);
+    }
+
+    // -------------------------------------------
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

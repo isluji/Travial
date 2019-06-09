@@ -1,19 +1,13 @@
 package com.isluji.travial.model;
 
-import com.isluji.travial.enums.TriviaDifficulty;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
-import androidx.room.Relation;
 
-@Entity(foreignKeys = @ForeignKey(entity = PointOfInterest.class,
-        parentColumns = "id", childColumns = "poi_id"))
+import com.isluji.travial.enums.TriviaDifficulty;
+
+@Entity
 public class Trivia {
 
     @PrimaryKey(autoGenerate = true)
@@ -29,13 +23,13 @@ public class Trivia {
     @ColumnInfo(name = "passing_score")
     private double passingScore;
 
-    // Foreign key from PointOfInterest
+    // Google Places API ID of the related PointOfInterest
     @ColumnInfo(name = "poi_id", index = true)
-    private int poiId;
+    private String poiId;
 
 
     public Trivia(@NonNull String title, TriviaDifficulty difficulty,
-                  double passingScore, int poiId) {
+                  double passingScore, String poiId) {
         this.title = title;
         this.difficulty = difficulty;
         this.passingScore = passingScore;
@@ -78,11 +72,11 @@ public class Trivia {
         this.passingScore = passingScore;
     }
 
-    public int getPoiId() {
+    public String getPoiId() {
         return poiId;
     }
 
-    public void setPoiId(int poiId) {
+    public void setPoiId(String poiId) {
         this.poiId = poiId;
     }
 }

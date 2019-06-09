@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.TriviaResult;
@@ -56,6 +58,7 @@ public class ResultFragment extends Fragment {
         // Evaluate the recently completed trivia
         // and store the result in the DB
         TriviaResult result = mViewModel.evaluateSelectedTrivia();
+        Log.v("app-db", "TriviaResult: " + new Gson().toJson(result));
 
         try {
             mViewModel.insertResult(result);

@@ -14,9 +14,8 @@ public class TriviaQuestionWithAnswers {
     @Relation(parentColumn = "id", entityColumn = "question_id")
     private List<TriviaAnswer> answers;
 
-    public TriviaQuestionWithAnswers(TriviaQuestion question/*, List<TriviaAnswer> answers*/) {
+    public TriviaQuestionWithAnswers(TriviaQuestion question) {
         this.question = question;
-//        this.answers = answers;
     }
 
 

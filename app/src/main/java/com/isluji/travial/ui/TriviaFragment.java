@@ -1,6 +1,7 @@
 package com.isluji.travial.ui;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,13 +65,18 @@ public class TriviaFragment extends Fragment {
 
             // Get the shared ViewModel between MainActivity and its fragments
             mViewModel = ViewModelProviders
-                    .of(Objects.requireNonNull(this.getActivity()))
+                    .of(Objects.requireNonNull(this.getActivity())) // TODO?
                     .get(TriviaViewModel.class);
+
+            SharedPreferences sharedPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(this.getActivity().getApplicationContext());
+            String userEmail = sharedPrefs.getString("user_email",
+                    getString(R.string.placeholder_user_email));
 
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mViewModel.getAllTrivias().observe(this, new Observer<List<TriviaWithQuestions>>() {
+            mViewModel.getUserTrivias(userEmail).observe(this, new Observer<List<TriviaWithQuestions>>() {
                 @Override
                 public void onChanged(final List<TriviaWithQuestions> trivias) {
                     // Update the cached copy of the selected trivia in the adapter.

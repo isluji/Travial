@@ -12,7 +12,6 @@ import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import androidx.lifecycle.AndroidViewModel;
@@ -27,14 +26,18 @@ public class TriviaViewModel extends AndroidViewModel {
 
     private TriviaRepository mRepository;
 
-    private LiveData<List<TriviaWithQuestions>> mAllTrivias;
     private int mSelectedTriviaPosition;
+
+    private LiveData<List<TriviaWithQuestions>> mUserTrivias;
+    private LiveData<List<TriviaResult>> mUserResults;
 
     public TriviaViewModel(Application app) {
         super(app);
 
         mRepository = new TriviaRepository(app);
-        mAllTrivias = mRepository.getAllTrivias();
+
+//        mUserTrivias = this.getUserTrivias();
+//        mUserResults = this.getUserResults();
 
         mSelectedTriviaPosition = 0;
     }
@@ -51,28 +54,36 @@ public class TriviaViewModel extends AndroidViewModel {
     // ***** Wrapper methods *****
     // (they completely hide the implementation from the UI)
 
-    public LiveData<List<TriviaWithQuestions>> getAllTrivias() {
-        return mAllTrivias;
+    public LiveData<List<TriviaWithQuestions>> getUserTrivias(String userEmail) {
+        return mRepository.getUserTrivias(userEmail);
     }
 
     public LiveData<List<TriviaResult>> getUserResults(String userEmail) {
         return mRepository.getUserResults(userEmail);
     }
 
-    public TriviaWithQuestions getSelectedTrivia() {
-        return Objects.requireNonNull(mAllTrivias.getValue())
-                .get(mSelectedTriviaPosition);
-    }
-
-    public void insertUser(User newUser) {
-        mRepository.insertUser(newUser);
-    }
-
-    public long insertResult(TriviaResult newResult) throws ExecutionException, InterruptedException {
+    public long insertResult(TriviaResult newResult)
+            throws ExecutionException, InterruptedException {
         return mRepository.insertResult(newResult);
     }
 
+    public User createOrRetrieveUser(String email, String googleId)
+            throws ExecutionException, InterruptedException {
+        return mRepository.createOrRetrieveUser(email, googleId);
+    }
+
     // -------------------------------------------------------
+
+    // TODO: mUserTrivias, mUserResults
+    public TriviaWithQuestions getSelectedTrivia() {
+        TriviaWithQuestions twq = null;
+
+        if (mUserTrivias.getValue() != null) {
+            twq = mUserTrivias.getValue().get(mSelectedTriviaPosition);
+        }
+
+        return twq;
+    }
 
     public TriviaResult evaluateSelectedTrivia() {
         TriviaWithQuestions twq = this.getSelectedTrivia();
@@ -88,10 +99,11 @@ public class TriviaViewModel extends AndroidViewModel {
         }
 
         // Get the current user's email address
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this.getApplication());
-        String userEmail = sharedPrefs.getString("user_email", this.getApplication().getString(R.string.placeholder_user_email));
+        SharedPreferences sharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getApplication().getApplicationContext());
+        String userEmail = sharedPrefs.getString("user_email",
+                this.getApplication().getString(R.string.placeholder_user_email));
 
-        // TODO: Pass the current user email
         return new TriviaResult(twq.getId(), userEmail, score);
     }
 }

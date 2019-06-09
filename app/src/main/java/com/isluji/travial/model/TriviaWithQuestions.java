@@ -1,8 +1,5 @@
 package com.isluji.travial.model;
 
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -27,9 +24,8 @@ public class TriviaWithQuestions {
               entity = TriviaQuestion.class)
     private List<TriviaQuestionWithAnswers> questions;
 
-    public TriviaWithQuestions(Trivia trivia/*, List<TriviaQuestionWithAnswers> questions*/) {
+    public TriviaWithQuestions(Trivia trivia) {
         this.trivia = trivia;
-//        this.questions = questions;
     }
 
 
@@ -51,12 +47,12 @@ public class TriviaWithQuestions {
         this.questions = questions;
     }
 
+
+    /* ******** Implemented methods ******** */
+
     public int getId() {
         return this.getTrivia().getId();
     }
-
-
-    /* ******** Implemented methods ******** */
 
     public double getMaxScore() {
         int maxScore = 0;

@@ -1,14 +1,29 @@
 package com.isluji.travial.misc;
 
-import com.isluji.travial.enums.PoiType;
-import com.isluji.travial.enums.TriviaDifficulty;
-
 import androidx.room.TypeConverter;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.isluji.travial.enums.TriviaDifficulty;
 
 import org.threeten.bp.OffsetDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 
+import java.util.Set;
+
 public class Converters {
+
+    // Set<String> <-> String (JSON)
+
+    @TypeConverter
+    public static Set<String> toStringSet(String value) {
+        return new Gson().fromJson(value, new TypeToken<Set<String>>() {}.getType());
+    }
+
+    @TypeConverter
+    public static String fromStringSet(Set<String> stringSet) {
+        return new Gson().toJson(stringSet);
+    }
 
     // OffsetDateTime (ThreeTenABP) <-> String
 
@@ -25,27 +40,15 @@ public class Converters {
     }
 
 
-    // PoiType (enum) <-> String
-
-    @TypeConverter
-    public static PoiType stringToPoiType(String value) {
-        return PoiType.valueOf(value);
-    }
-
-    @TypeConverter
-    public static String poiTypeToString(PoiType poiType) {
-        return poiType.name();
-    }
-
     // TriviaDifficulty (enum) <-> String
 
     @TypeConverter
-    public static TriviaDifficulty stringToTriviaDifficulty(String value) {
+    public static TriviaDifficulty toTriviaDifficulty(String value) {
         return TriviaDifficulty.valueOf(value);
     }
 
     @TypeConverter
-    public static String triviaDifficultyToString(TriviaDifficulty difficulty) {
+    public static String fromTriviaDifficulty(TriviaDifficulty difficulty) {
         return difficulty.name();
     }
 }

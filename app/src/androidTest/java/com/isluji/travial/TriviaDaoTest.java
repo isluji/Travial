@@ -31,6 +31,7 @@ import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.model.PointOfInterest;
 import com.isluji.travial.model.Trivia;
+import com.isluji.travial.model.User;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -51,77 +53,31 @@ import static junit.framework.Assert.assertTrue;
  */
 
 @RunWith(AndroidJUnit4.class)
-public class TriviaDaoTest {
-
-    @Rule
-    public InstantTaskExecutorRule iter = new InstantTaskExecutorRule();
-
-    private AppDao mDao;
-    private AppDatabase mDb;
+public class SimpleEntityReadWriteTest {
+    private AppDao dao;
+    private AppDatabase db;
 
     @Before
     public void createDb() {
-        // ALTERNATIVE: InstrumentationRegistry.getInstrumentation().getContext()
         Context context = ApplicationProvider.getApplicationContext();
-        // Using an in-memory database because the information stored here disappears when the
-        // process is killed.
-        mDb = Room.inMemoryDatabaseBuilder(context, AppDatabase.class)
-                // Allowing main thread queries, just for testing.
-                .allowMainThreadQueries()
-                .build();
-        mDao = mDb.getAppDao();
+        db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
+        dao = db.getAppDao();
     }
 
     @After
-    public void closeDb() {
-        mDb.close();
+    public void closeDb() throws IOException {
+        db.close();
     }
 
     @Test
-    public void insertAndGetTrivia() throws Exception {
-        /* Insert test data */
-        PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        poi.setId(mDao.insertPoi(poi));
+    public void writeUserAndReadInList() throws Exception {
+        User user = new User("email@prueba.com", "googleId");
+        Trivia trivia = new Trivia("Trivia de Prueba", TriviaDifficulty.EASY, 5, "poiId");
+        trivia.setId(Long.valueOf(dao.insertTrivia(trivia)).intValue());
 
-        Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
-        mDao.insertTrivia(trivia);
-
-        /* Evaluate test condition */
-        List<Trivia> allTrivias = LiveDataTestUtil.getValue(mDao.getAllTrivias());
-        assertEquals(allTrivias.get(0).getTitle(), trivia.getTitle());
-    }
-
-    @Test
-    public void getAllTrivias() throws Exception {
-        /* Insert test data */
-        PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        poi.setId(mDao.insertPoi(poi));
-
-        Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
-        mDao.insertTrivia(trivia);
-        Trivia trivia2 = new Trivia("Arte de Lozano Sidro", TriviaDifficulty.MEDIUM, 6, poi.getId());
-        mDao.insertTrivia(trivia2);
-
-        /* Evaluate test conditions */
-        List<Trivia> allTrivias = LiveDataTestUtil.getValue(mDao.getAllTrivias());
-        assertEquals(allTrivias.get(0).getTitle(), trivia.getTitle());
-        assertEquals(allTrivias.get(1).getTitle(), trivia2.getTitle());
-    }
-
-    @Test
-    public void deleteAll() throws Exception {
-        /* Insert test data */
-        PointOfInterest poi = new PointOfInterest("Fuente del Rey", PoiType.MONUMENT, "Remigio del Mármol", 1803, true, null, null);
-        poi.setId(mDao.insertPoi(poi));
-
-        Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, poi.getId());
-        mDao.insertTrivia(trivia);
-        Trivia trivia2 = new Trivia("Arte de Lozano Sidro", TriviaDifficulty.MEDIUM, 6, poi.getId());
-        mDao.insertTrivia(trivia2);
-        mDao.deleteAllTrivias();
-
-        /* Evaluate test condition */
-        List<Trivia> allTrivias = LiveDataTestUtil.getValue(mDao.getAllTrivias());
-        assertTrue(allTrivias.isEmpty());
+//        user.setName("george");
+//        dao.insert(user);
+//        List<User> byName = dao.findUsersByName("george");
+//        assertThat(byName.get(0), equalTo(user));
     }
 }
