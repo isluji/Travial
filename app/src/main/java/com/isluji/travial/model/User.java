@@ -8,9 +8,7 @@ import androidx.room.PrimaryKey;
 
 import org.threeten.bp.OffsetDateTime;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity(indices = @Index(name = "google_id", value = "google_id", unique = true))
@@ -28,8 +26,8 @@ public class User {
     private OffsetDateTime registrationDate;
 
     // List with the Place ID of the registered POIs
-    @ColumnInfo(name = "unblocked_poi_ids")
-    private Set<String> unblockedPoiIds;
+    @ColumnInfo(name = "unlocked_poi_ids")
+    private Set<String> unlockedPoiIds;
 
     private boolean premium;
 
@@ -40,7 +38,7 @@ public class User {
 
         this.premium = false;   // False by default
         this.registrationDate = OffsetDateTime.now(); // Current date
-        this.unblockedPoiIds = new HashSet<>();
+        this.unlockedPoiIds = new HashSet<>();
     }
 
 
@@ -77,12 +75,12 @@ public class User {
         this.registrationDate = registrationDate;
     }
 
-    public Set<String> getUnblockedPoiIds() {
-        return unblockedPoiIds;
+    public Set<String> getUnlockedPoiIds() {
+        return unlockedPoiIds;
     }
 
-    public void setUnblockedPoiIds(Set<String> unblockedPoiIds) {
-        this.unblockedPoiIds = unblockedPoiIds;
+    public void setUnlockedPoiIds(Set<String> unlockedPoiIds) {
+        this.unlockedPoiIds = unlockedPoiIds;
     }
 
 

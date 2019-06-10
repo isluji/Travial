@@ -138,7 +138,7 @@ public class MapsActivity extends FragmentActivity
         mBtnRegLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unblockTrivias();
+                unlockTrivias();
             }
         });
     }
@@ -328,15 +328,15 @@ public class MapsActivity extends FragmentActivity
 
                         mViewModel.addPoi(poi);
 
-                        // Check if the user has unblocked this POI
+                        // Check if the user has unlocked this POI
                         // in order to change the color of the marker
-                        boolean unblocked = false;
+                        boolean unlocked = false;
 
                         if (userPoiIds != null) {
-                            unblocked = userPoiIds.contains(poi.getId());
+                            unlocked = userPoiIds.contains(poi.getId());
                         }
 
-                        this.setMarker(poi, unblocked);
+                        this.setMarker(poi, unlocked);
 
                         Log.i(getString(R.string.google_maps_tag),
                                 "POI found: " + poi.getName());
@@ -361,7 +361,7 @@ public class MapsActivity extends FragmentActivity
     }
 
     /** Add a marker in the given Place */
-    private void setMarker(Place place, boolean unblocked) {
+    private void setMarker(Place place, boolean unlocked) {
         // LatLng is the only essential property for a marker; can't be null
         if (place.getLatLng() != null) {
             MarkerOptions markerOptions = new MarkerOptions()
@@ -372,7 +372,7 @@ public class MapsActivity extends FragmentActivity
                 markerOptions.snippet(place.getTypes().toString());
             }
 
-            if (unblocked) {
+            if (unlocked) {
                 markerOptions.icon(BitmapDescriptorFactory
                         .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
             }
@@ -386,7 +386,7 @@ public class MapsActivity extends FragmentActivity
         }
     }
 
-    private void unblockTrivias() {
+    private void unlockTrivias() {
         if (mViewModel.isUserInAPoi()) {
             String currentPoiId = mViewModel.getCurrentPlace().getId();
 

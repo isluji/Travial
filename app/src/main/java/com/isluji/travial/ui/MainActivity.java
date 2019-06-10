@@ -2,9 +2,11 @@ package com.isluji.travial.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,6 +39,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -61,7 +64,6 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -165,22 +167,41 @@ public class MainActivity extends AppCompatActivity
         // Initialize Navigation Drawer variables
         NavigationView navView = this.findViewById(R.id.nav_view);
         DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
+        AppBarLayout appBar = this.findViewById(R.id.app_bar_layout);
         Toolbar toolbar = this.findViewById(R.id.toolbar);
-
-        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
         // Set the toolbar
         this.setSupportActionBar(toolbar);
 
-        // Set the drawer toggle
+        // Create the drawer toggle
+        mDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+
+        // Set the toggle as the drawer listener
         drawer.addDrawerListener(mDrawerToggle);
 
-//        mDrawerToggle.setDrawerIndicatorEnabled(false);
-//        mDrawerToggle.syncState();
+        // Hide drawer toggle and disable swipe to open
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
 
         // Set the navigation view
         navView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Sync the drawer toggle with the new config
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -219,19 +240,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // TODO: Handle action bar item clicks here.
-        // The action bar will automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        // The action bar will automatically handle clicks on the Home/Up button,
+        // so long as you specify a parent activity in AndroidManifest.xml.
+        boolean action = super.onOptionsItemSelected(item);
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                action = true;
+                break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return action;
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // TODO: Handle navigation view item clicks here.
@@ -435,6 +457,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateUiOnLogin() {
+        DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
+
         Button btnPlay = this.findViewById(R.id.btnPlay);
         Button btnLocation = this.findViewById(R.id.btnLocation);
         SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
@@ -448,9 +472,9 @@ public class MainActivity extends AppCompatActivity
         btnPlay.setVisibility(View.VISIBLE);
         btnLocation.setVisibility(View.VISIBLE);
 
-        // Reveal drawer toggle
-//        mDrawerToggle.setDrawerIndicatorEnabled(true);
-//        mDrawerToggle.syncState();
+        // Show drawer toggle and enable swipe to open
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
 
         // Update the profile section in the Navigation Drawer
         if (userNameText != null && userEmailText != null && userPhotoImg != null) {
@@ -461,6 +485,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateUiOnLogout() {
+        DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
+
         Button btnPlay = this.findViewById(R.id.btnPlay);
         Button btnLocation = this.findViewById(R.id.btnLocation);
         SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
@@ -474,9 +500,9 @@ public class MainActivity extends AppCompatActivity
         btnLocation.setVisibility(View.INVISIBLE);
         btnSignIn.setVisibility(View.VISIBLE);
 
-        // Hide drawer toggle
-//        mDrawerToggle.setDrawerIndicatorEnabled(false);
-//        mDrawerToggle.syncState();
+        // Hide drawer toggle and disable swipe to open
+        drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        mDrawerToggle.setDrawerIndicatorEnabled(false);
 
         // Update the profile section in the Navigation Drawer
         if (userNameText != null && userEmailText != null && userPhotoImg != null) {
@@ -516,7 +542,7 @@ public class MainActivity extends AppCompatActivity
                 sharedPrefs.edit()
                         .putString("user_email", email)
                         .putString("user_google_id", googleId)
-                        .putStringSet("user_poi_ids", user.getUnblockedPoiIds())
+                        .putStringSet("user_poi_ids", user.getUnlockedPoiIds())
                         .apply();
             }
         } catch (Exception e) {

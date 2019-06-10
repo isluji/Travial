@@ -47,7 +47,7 @@ public interface AppDao {
 
     @Transaction
     @Query("SELECT * FROM trivia WHERE poi_id IN " +
-            "(SELECT unblocked_poi_ids FROM user WHERE email = :userEmail)")
+            "(SELECT unlocked_poi_ids FROM user WHERE email = :userEmail)")
     LiveData<List<TriviaWithQuestions>> getUserTrivias(String userEmail);
 
     @Query("SELECT * FROM trivia_result WHERE user_email = :userEmail ORDER BY id ASC")
