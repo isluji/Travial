@@ -83,6 +83,10 @@ public class User {
         this.unlockedPoiIds = unlockedPoiIds;
     }
 
+    public void unlockPoi(String poiId) {
+        this.unlockedPoiIds.add(poiId);
+    }
+
 
     /** Implemented methods */
 

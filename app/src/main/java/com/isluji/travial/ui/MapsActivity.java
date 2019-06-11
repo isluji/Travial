@@ -387,46 +387,68 @@ public class MapsActivity extends FragmentActivity
     }
 
     private void unlockTrivias() {
+        String message = null;
+        DialogInterface.OnCancelListener onCancelListener = null;
+
+        // If the user is located in one of the available POIs
         if (mViewModel.isUserInAPoi()) {
             String currentPoiId = mViewModel.getCurrentPlace().getId();
+            String currentPoiName = mViewModel.getCurrentPlace().getName();
 
             SharedPreferences sharedPrefs = PreferenceManager
                     .getDefaultSharedPreferences(this.getApplicationContext());
-            Set<String> poiIds = sharedPrefs
+            String userEmail = sharedPrefs
+                    .getString("user_email", null);
+            Set<String> poiIdSet = sharedPrefs    // TODO? getStringSet has problems
                     .getStringSet("user_poi_ids", new HashSet<>());
 
-            // CASE A) User hadn't unlocked this POI
-            if (poiIds != null) {
-                if (!poiIds.contains(currentPoiId)) {
-                    poiIds.add(currentPoiId);
+            // Check that the required params have valid values
+            if (poiIdSet != null && userEmail != null) {
 
-                    // TODO 1: Update the list of POIs of the User in the DB
-                    // TODO 2: Notify the user that he has unlocked new trivias
-                    // TODO 3: Go to the list of trivias
+                // CASE A) User hadn't unlocked this POI
+                if (!poiIdSet.contains(currentPoiId)) {
+                    // Add POI to this user's set
+                    poiIdSet.add(currentPoiId);
+
+                    // Update the list of POIs of the User in the DB
+                    mViewModel.unlockPoiForUser(currentPoiId, userEmail);
+
+                    message = "CONGRATULATIONS! " +
+                            "You've just unlocked all trivias from " + currentPoiName;
+
+                // CASE B) User had already unlocked this POI
                 } else {
-                    // CASE B) User had already unlocked this POI:
-                    //  -> Notify him and go to the list of trivias
-                    new AlertDialog.Builder(this)
-                            .setMessage("You had already unlocked this Point of Interest")
-                            .setOnCancelListener(dialog -> {
-                                // TODO: Load MA in that fragment and test that it works
-                                Intent i = new Intent(this, MainActivity.class);
-                                i.putExtra("frgToLoad", "triviaList");
-                                this.startActivity(i);
-                            }).create()
-                            .show();
+                    message = "You had already unlocked this Point of Interest";
                 }
+
+                // Both cases A and B -> Go to the list of trivias
+                onCancelListener = dialog -> {
+                    Intent i = new Intent(this, MainActivity.class);
+                    i.putExtra("fragment", "trivia_list");
+                    this.startActivity(i);
+                };
+
+            // CASE C) Something has gone wrong
+            } else {    // TODO? Improve this
+                message = "Something has gone wrong";
+
+                // Go back to main activity
+                onCancelListener = dialog -> this.onBackPressed();
             }
+
+        // CASE D) User is not located in a POI
         } else {
-            // CASE C) User isn't in any POI:
-            //  -> Notify him and return to the MainActivity
-            new AlertDialog.Builder(this)
-                .setMessage("You are not located in any Point of Interest")
-                .setOnCancelListener(
-                        dialog -> this.onBackPressed()
-                ).create()
-                .show();
+            message = "You are not located in any Point of Interest";
+
+            // Go back to main activity
+            onCancelListener = dialog -> this.onBackPressed();
         }
+
+        new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setOnCancelListener(onCancelListener)
+                .create()
+                .show();
     }
 
     private void centerOnMyLocation() {

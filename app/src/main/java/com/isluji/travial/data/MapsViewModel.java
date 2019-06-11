@@ -40,6 +40,10 @@ public class MapsViewModel extends AndroidViewModel {
         return mAllPoiIds;
     }
 
+    public void unlockPoiForUser(String poiId, String userEmail) {
+        mRepository.unlockPoiForUser(poiId, userEmail);
+    }
+
     public void addPoi(Place poi) {
         mPoiSet.add(poi);
     }

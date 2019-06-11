@@ -1,5 +1,6 @@
 package com.isluji.travial.model;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -65,6 +66,8 @@ public class TriviaWithQuestions {
     }
 
     public boolean isValidScore(double score) {
+        Log.v("results", "score: " + score
+                + " | maxScore: " + this.getMaxScore());
         return ( (score >= 0) && (score <= this.getMaxScore()) );
     }
 
