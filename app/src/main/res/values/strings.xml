@@ -124,4 +124,5 @@
     <string name="room_db_name">app-db</string>
     <string name="google_sign_in_tag">google-sign-in</string>
     <string name="google_maps_tag">google-maps</string>
+    <string name="nav_main_title">Main screen</string>
 </resources>

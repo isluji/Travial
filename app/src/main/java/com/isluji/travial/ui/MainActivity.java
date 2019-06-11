@@ -3,6 +3,8 @@ package com.isluji.travial.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -57,10 +59,13 @@ import com.isluji.travial.model.TriviaResult;
 import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 import com.jakewharton.threetenabp.AndroidThreeTen;
+import com.squareup.picasso.Picasso;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -244,7 +249,6 @@ public class MainActivity extends AppCompatActivity
         // so long as you specify a parent activity in AndroidManifest.xml.
         boolean action = super.onOptionsItemSelected(item);
 
-        //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
             case R.id.action_settings:
                 action = true;
@@ -257,21 +261,32 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // TODO: Handle navigation view item clicks here.
+        Fragment fragment = null;
+        String tag = null;
+
         switch (item.getItemId()) {
+            case R.id.nav_main:
+                this.getSupportFragmentManager().popBackStack();
+                break;
+
             case R.id.nav_tutorial:
-                this.loadTutorialFragment();
+                fragment = new TutorialFragment();
+                tag = "tutorial_fragment";
                 break;
 
             case R.id.nav_results:
-                this.loadResultListFragment();
+                fragment = new ResultListFragment();
+                tag = "result_list_fragment";
                 break;
 
             case R.id.nav_rankings:
                 // TODO
+                tag = "rankings_fragment";
                 break;
 
             case R.id.nav_premium:
                 // TODO
+                tag = "premium_fragment";
                 break;
 
             case R.id.nav_share:
@@ -281,6 +296,18 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_logout:
                 this.logOut();
                 break;
+        }
+
+        if (fragment != null) {
+            // Delete previous transaction to avoid the accumulation of fragments.
+            this.getSupportFragmentManager().popBackStack();
+
+            // Switch to the selected fragment
+            this.getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.app_bar_main, fragment, tag)
+                    .addToBackStack(null)
+                    .commit();
         }
 
         // Close the drawer when the action is done
@@ -438,6 +465,9 @@ public class MainActivity extends AppCompatActivity
         // Logged out successfully, show initial UI.
         this.updateUiOnUserChange();
 
+        // Return the user to the main screen.
+        this.getSupportFragmentManager().popBackStack();
+
         String goodbye = getString(R.string.goodbye);
         Toast.makeText(getApplicationContext(), goodbye, Toast.LENGTH_LONG).show();
     }
@@ -476,11 +506,18 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
         mDrawerToggle.setDrawerIndicatorEnabled(true);
 
+        Log.v("profile", "userNameText: " + userNameText);
+        Log.v("profile", "userEmailText: " + userEmailText);
+        Log.v("profile", "userPhotoImg: " + userPhotoImg);
+
         // Update the profile section in the Navigation Drawer
         if (userNameText != null && userEmailText != null && userPhotoImg != null) {
             userNameText.setText(mGoogleAccount.getDisplayName());
             userEmailText.setText(mGoogleAccount.getEmail());
-            userPhotoImg.setImageURI(mGoogleAccount.getPhotoUrl());
+            Picasso.get().load(mGoogleAccount.getPhotoUrl())
+                    .placeholder(R.mipmap.baseline_face_black_18dp)
+                    .error(R.mipmap.baseline_broken_image_black_18dp)
+                    .fit().into(userPhotoImg);
         }
     }
 
@@ -564,45 +601,35 @@ public class MainActivity extends AppCompatActivity
     /* ***** Methods to load the fragments ***** */
 
     public void loadTriviaListFragment() {
+        this.getSupportFragmentManager().popBackStack();
         this.getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.app_bar_main, new TriviaListFragment())
-            .addToBackStack(null)
-            .commit();
+                .beginTransaction()
+                .replace(R.id.app_bar_main, new TriviaListFragment(),
+                        "trivia_list_fragment")
+                .addToBackStack(null)
+                .commit();
     }
 
     public void loadTriviaFragment(int position) {
         mViewModel.setSelectedTriviaPosition(position);
 
+        this.getSupportFragmentManager().popBackStack();
         this.getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.app_bar_main, new TriviaFragment())
-            .addToBackStack(null)
-            .commit();
+                .beginTransaction()
+                .replace(R.id.app_bar_main, new TriviaFragment(),
+                        "trivia_fragment")
+                .addToBackStack(null)
+                .commit();
     }
 
     public void loadTriviaResultFragment() {
+        this.getSupportFragmentManager().popBackStack();
         this.getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.app_bar_main, new ResultFragment())
-            .addToBackStack(null)
-            .commit();
-    }
-
-    private void loadResultListFragment() {
-        this.getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.app_bar_main, new ResultListFragment())
-            .addToBackStack(null)
-            .commit();
-    }
-
-    private void loadTutorialFragment() {
-        this.getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.app_bar_main, new TutorialFragment())
-            .addToBackStack(null)
-            .commit();
+                .beginTransaction()
+                .replace(R.id.app_bar_main, new ResultFragment(),
+                        "result_fragment")
+                .addToBackStack(null)
+                .commit();
     }
 
     public void loadMapsActivity() {
