@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +16,16 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.TriviaWithQuestions;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A fragment representing a list of Items.
@@ -80,17 +84,20 @@ public class TriviaListFragment extends Fragment {
 
             SharedPreferences sharedPrefs = PreferenceManager
                     .getDefaultSharedPreferences(this.getActivity().getApplicationContext());
-            String userEmail = sharedPrefs.getString("user_email",
-                    getString(R.string.placeholder_user_email));
+
+            Set<String> userPoiIds = sharedPrefs
+                    .getStringSet("user_poi_ids", new LinkedHashSet<>());
 
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mViewModel.getUserTrivias(userEmail).observe(this, new Observer<List<TriviaWithQuestions>>() {
+            mViewModel.getUserTrivias(userPoiIds).observe(this, new Observer<List<TriviaWithQuestions>>() {
                 @Override
                 public void onChanged(@Nullable final List<TriviaWithQuestions> trivias) {
                     // Update the cached copy of the trivias in the adapter.
                     adapter.setTrivias(trivias);
+                    Log.v(getString(R.string.trivia_list_log),
+                            new Gson().toJson(trivias));
                 }
             });
         }

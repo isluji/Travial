@@ -13,6 +13,7 @@ import com.isluji.travial.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 class TriviaRepository {
@@ -32,10 +33,8 @@ class TriviaRepository {
 //        mUserResults = mDao.getUserResults();
     }
 
-    // Room executes all queries on a separate thread.
-    // Observed LiveData will notify the observer when the data has changed.
-    LiveData<List<TriviaWithQuestions>> getUserTrivias(String userEmail) {
-        return mDao.getUserTrivias(userEmail);
+    LiveData<List<TriviaWithQuestions>> getUserTrivias(Set<String> userPoiIds) {
+        return mDao.getUserTrivias(userPoiIds);
     }
 
     LiveData<List<TriviaResult>> getUserResults(String userEmail) {
@@ -58,7 +57,21 @@ class TriviaRepository {
 
     // ***** AsyncTask queries (inner classes) *****
 
-    // TODO: This should be a normal method or an AsyncTask?
+    // AsyncTask for insertResult(newResult)
+    private static class insertResult_AsyncTask extends AsyncTask<TriviaResult, Void, Long> {
+
+        private AppDao mAsyncTaskDao;
+
+        insertResult_AsyncTask(AppDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Long doInBackground(final TriviaResult... params) {
+            return mAsyncTaskDao.insertResult(params[0]);
+        }
+    }
+
     // AsyncTask for createOrRetrieveUser(email, googleId)
     private static class createOrRetrieveUser_AsyncTask extends AsyncTask<String, Void, User> {
 
@@ -78,27 +91,44 @@ class TriviaRepository {
 
             // User wasn't registered -> Create new User
             if (user == null) {
+                Log.v("user-auth-log", "New user: Signed up in the system");
                 user = new User(email, googleId);
                 mAsyncTaskDao.insertUser(user);
+            } else {
+                Log.v("user-auth-log", "Existent user: Fetching user data");
             }
 
             return user;
         }
     }
 
-    // AsyncTask for insertResult(newResult)
-    private static class insertResult_AsyncTask extends AsyncTask<TriviaResult, Void, Long> {
-
-        private AppDao mAsyncTaskDao;
-
-        insertResult_AsyncTask(AppDao dao) {
-            mAsyncTaskDao = dao;
-        }
-
-        @Override
-        protected Long doInBackground(final TriviaResult... params) {
-            return mAsyncTaskDao.insertResult(params[0]);
-        }
-    }
+    // AsyncTask for getUserTrivias(userEmail)
+//    private static class getUserTrivias_AsyncTask extends AsyncTask<String, Void, List<TriviaWithQuestions>> {
+//
+//        private AppDao mAsyncTaskDao;
+//
+//        getUserTrivias_AsyncTask(AppDao dao) {
+//            mAsyncTaskDao = dao;
+//        }
+//
+//        @Override
+//        protected List<TriviaWithQuestions> doInBackground(final String... params) {
+//            String userEmail = params[0];
+//
+//            // Retrieve the user data if he's registered
+//            User user = mAsyncTaskDao.findUserByEmail(userEmail);
+//
+//            // User wasn't registered -> Create new User
+//            if (user == null) {
+//                Log.v("user-auth-log", "New user: Signed up in the system");
+//                user = new User(email, googleId);
+//                mAsyncTaskDao.insertUser(user);
+//            } else {
+//                Log.v("user-auth-log", "Existent user: Fetching user data");
+//            }
+//
+//            return user;
+//        }
+//    }
 }
 

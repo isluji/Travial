@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.isluji.travial.R;
 import com.isluji.travial.model.TriviaResult;
-import com.isluji.travial.dummy.DummyContent.DummyItem;
 import com.isluji.travial.ui.ResultListFragment.OnListFragmentInteractionListener;
 
 import java.util.Collections;

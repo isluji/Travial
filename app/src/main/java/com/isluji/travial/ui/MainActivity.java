@@ -3,12 +3,9 @@ package com.isluji.travial.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -63,12 +60,11 @@ import com.squareup.picasso.Picasso;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -114,46 +110,42 @@ public class MainActivity extends AppCompatActivity
         // Set up the Navigation Drawer layout
         this.setUpNavigationDrawer();
 
-        // Create variables for the view elements
-        Button btnPlay = this.findViewById(R.id.btnPlay);
-        Button btnLocation = this.findViewById(R.id.btnLocation);
-        FloatingActionButton fab = this.findViewById(R.id.fab);
-        SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
 
         /* ***** Event listeners ***** */
 
+        // Create variables for the view elements
+        Button btnPlay = this.findViewById(R.id.btnPlay);
+        Button btnUnlock = this.findViewById(R.id.btnUnlock);
+        FloatingActionButton fab = this.findViewById(R.id.fab);
+        SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
+
         // Google Sign-In button
-        btnSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signIn();
-            }
-        });
+        btnSignIn.setOnClickListener(v -> signIn());
 
         // "Play" button
-        btnPlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadTriviaListFragment();
-            }
-        });
+        btnPlay.setOnClickListener(v -> loadTriviaListFragment());
 
-        // "Register location" button
-        btnLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadMapsActivity();
-            }
-        });
+        // "Unlock POI" button
+        btnUnlock.setOnClickListener(v -> loadMapsActivity());
 
         // Floating Action Button
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        fab.setOnClickListener(view -> Snackbar
+                .make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
+
+
+        /* ***** Fragments ***** */
+
+        // Load a fragment if the Intent we come from specifies it
+        String fragmentToLoad = this.getIntent().getStringExtra("fragment");
+
+        if (fragmentToLoad != null) {
+            switch (fragmentToLoad) {
+                case "trivia_list":
+                    this.loadTriviaListFragment();
+                    break;
             }
-        });
+        }
     }
 
     @Override
@@ -213,13 +205,15 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed
-            // (no need to attach a listener.)
-            Task<GoogleSignInAccount> task = GoogleSignIn
-                    .getSignedInAccountFromIntent(data);
-            this.handleSignInResult(task);
+        switch (requestCode) {
+            // Google Sign-In request
+            case RC_SIGN_IN:
+                // The Task returned from this call is always completed
+                // (no need to attach a listener.)
+                Task<GoogleSignInAccount> task = GoogleSignIn
+                        .getSignedInAccountFromIntent(data);
+                this.handleSignInResult(task);
+                break;
         }
     }
 
@@ -388,7 +382,7 @@ public class MainActivity extends AppCompatActivity
             new GoogleBrowserClientRequestUrl(clientId, redirectUri, Arrays.asList(scope))
                 .build();
 
-        Log.v(getString(R.string.google_sign_in_tag),
+        Log.v(getString(R.string.user_auth_log),
                 "authorizationUrl: " + authorizationUrl);
 
         // Point or redirect your user to the authorizationUrl.
@@ -400,7 +394,7 @@ public class MainActivity extends AppCompatActivity
         System.out.println("What is the authorization code?");
         String code = in.readLine();
 
-        Log.v(getString(R.string.google_sign_in_tag), "code: " + code);
+        Log.v(getString(R.string.user_auth_log), "code: " + code);
 
         /* ***** STEP 2: Exchange ***** */
 //        GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
@@ -469,7 +463,8 @@ public class MainActivity extends AppCompatActivity
         this.getSupportFragmentManager().popBackStack();
 
         String goodbye = getString(R.string.goodbye);
-        Toast.makeText(getApplicationContext(), goodbye, Toast.LENGTH_LONG).show();
+        Toast.makeText(this.getApplicationContext(), goodbye, Toast.LENGTH_LONG)
+                .show();
     }
 
     private void updateUiOnUserChange() {
@@ -490,7 +485,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
 
         Button btnPlay = this.findViewById(R.id.btnPlay);
-        Button btnLocation = this.findViewById(R.id.btnLocation);
+        Button btnUnlock = this.findViewById(R.id.btnUnlock);
         SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
 
         TextView userNameText = this.findViewById(R.id.userNameText);
@@ -500,15 +495,11 @@ public class MainActivity extends AppCompatActivity
         // Hide the sign-in button and unveil the UI buttons
         btnSignIn.setVisibility(View.INVISIBLE);
         btnPlay.setVisibility(View.VISIBLE);
-        btnLocation.setVisibility(View.VISIBLE);
+        btnUnlock.setVisibility(View.VISIBLE);
 
         // Show drawer toggle and enable swipe to open
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
         mDrawerToggle.setDrawerIndicatorEnabled(true);
-
-        Log.v("profile", "userNameText: " + userNameText);
-        Log.v("profile", "userEmailText: " + userEmailText);
-        Log.v("profile", "userPhotoImg: " + userPhotoImg);
 
         // Update the profile section in the Navigation Drawer
         if (userNameText != null && userEmailText != null && userPhotoImg != null) {
@@ -525,7 +516,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = this.findViewById(R.id.drawer_layout);
 
         Button btnPlay = this.findViewById(R.id.btnPlay);
-        Button btnLocation = this.findViewById(R.id.btnLocation);
+        Button btnUnlock = this.findViewById(R.id.btnUnlock);
         SignInButton btnSignIn = this.findViewById(R.id.sign_in_button);
 
         TextView userNameText = this.findViewById(R.id.userNameText);
@@ -534,7 +525,7 @@ public class MainActivity extends AppCompatActivity
 
         // Hide the UI buttons and show the sign-in button
         btnPlay.setVisibility(View.INVISIBLE);
-        btnLocation.setVisibility(View.INVISIBLE);
+        btnUnlock.setVisibility(View.INVISIBLE);
         btnSignIn.setVisibility(View.VISIBLE);
 
         // Hide drawer toggle and disable swipe to open
@@ -559,8 +550,7 @@ public class MainActivity extends AppCompatActivity
             String email = mGoogleAccount.getEmail();
             String googleId = mGoogleAccount.getId();
 
-            Log.v(getString(R.string.google_sign_in_tag),
-                    "email: " + email + " | googleId: " + googleId);
+            Log.v(getString(R.string.user_auth_log), "USER: " + email);
 
             if (email != null && googleId != null) {
                 // Show welcome message
@@ -570,6 +560,16 @@ public class MainActivity extends AppCompatActivity
                 // If user exists, retrieve its data from the DB.
                 // If he wasn't registered, insert a new user in the DB.
                 User user = mViewModel.createOrRetrieveUser(email, googleId);
+
+                Set<String> unlockedPoiIds = user.getUnlockedPoiIds();
+
+                if (unlockedPoiIds.isEmpty()) {
+                    Log.v(getString(R.string.user_auth_log),
+                            "You still don't have any POI unlocked");
+                } else {
+                    Log.v(getString(R.string.user_auth_log),
+                            "You have unlocked these POIs: " + unlockedPoiIds);
+                }
 
                 // Store the user ID in the default shared preferences file,
                 // so we know who is the logged user in the rest of the app.
@@ -586,7 +586,7 @@ public class MainActivity extends AppCompatActivity
             if (e instanceof ApiException) {
                 // The ApiException status code indicates the detailed failure reason.
                 // Please refer to the GoogleSignInStatusCodes class reference for more information.
-                Log.w(getString(R.string.google_sign_in_tag), "signInResult:failed code="
+                Log.w(getString(R.string.user_auth_log), "signInResult:failed code="
                         + ((ApiException) e).getStatusCode());
             } else {
                 e.printStackTrace();

@@ -47,6 +47,8 @@
     </string-array>
 
     <!-- Example settings for Data & Sync -->
+    <string name="room_db_name">app-db</string>
+
     <string name="pref_header_data_sync">Data &amp; sync</string>
 
     <string name="pref_title_sync_frequency">Sync frequency</string>
@@ -106,6 +108,8 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="goodbye">Successfully logged out. Goodbye!</string>
+
+    <string name="nav_main_title">Main screen</string>
     <string name="nav_tutorial_title">How to play</string>
     <string name="nav_results_title">My results</string>
     <string name="nav_rankings_title">Rankings</string>
@@ -121,8 +125,10 @@
     <string name="trivia_result_list_btn_text">List of results</string>
 
     <!-- Log tags -->
-    <string name="room_db_name">app-db</string>
-    <string name="google_sign_in_tag">google-sign-in</string>
-    <string name="google_maps_tag">google-maps</string>
-    <string name="nav_main_title">Main screen</string>
+
+    <string name="room_db_log">room-db-logs</string>
+    <string name="user_auth_log">user-auth-logs</string>
+    <string name="trivia_list_log">trivia-list-logs</string>
+    <string name="trivia_results_log">trivia-results-logs</string>
+    <string name="google_maps_log">google-maps-logs</string>
 </resources>

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey;
 
 import org.threeten.bp.OffsetDateTime;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity(indices = @Index(name = "google_id", value = "google_id", unique = true))
@@ -38,7 +38,7 @@ public class User {
 
         this.premium = false;   // False by default
         this.registrationDate = OffsetDateTime.now(); // Current date
-        this.unlockedPoiIds = new HashSet<>();
+        this.unlockedPoiIds = new LinkedHashSet<>();
     }
 
 

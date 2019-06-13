@@ -1,12 +1,13 @@
 package com.isluji.travial.ui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -21,14 +22,22 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStates;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
@@ -41,55 +50,50 @@ import com.isluji.travial.R;
 import com.isluji.travial.data.MapsViewModel;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 public class MapsActivity extends FragmentActivity
-        implements OnMapReadyCallback,
+        implements OnMapReadyCallback/*,
         GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener {
+        GoogleMap.OnMyLocationClickListener*/ {
 
     // Depending on the location accuracy that we choose,
     // we set these 2 variables to simplify the code
     private static final String LOCATION_ACCURACY = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final int MY_LOCATION_REQUEST = LOCATION_ACCURACY.length();
+    private static final int REQUEST_CHECK_SETTINGS = 33;
 
     private GoogleMap mMap;
-    private FusedLocationProviderClient mLocationClient;
+    private FusedLocationProviderClient mFusedLocationProvider;
     private PlacesClient mPlacesClient;
     private MapsViewModel mViewModel;
-
-    private Button mBtnRegLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_maps);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getSupportFragmentManager().findFragmentById(R.id.map);
+        // Initialize Google Maps & Places SDKs
+        this.setUpGoogleAPIs();
 
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        } else {
-            // TODO?
+        if (mMap == null) {
+
+            SupportMapFragment mapFragment = (SupportMapFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.map);
+
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this);
+            } else {
+                Log.e(getString(R.string.google_maps_log),
+                        "Error getting mapFragment");
+            }
         }
-
-        // Initialize the Google Maps location client.
-        mLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Initialize Places SDK.
-        Places.initialize(this.getApplicationContext(), getString(R.string.google_maps_key));
-
-        // Create a new Places client instance.
-        mPlacesClient = Places.createClient(this);
 
         // Get a new or existing ViewModel from the ViewModelProvider.
         mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
-
-        mBtnRegLocation = this.findViewById(R.id.btnRegLocation);
     }
 
 
@@ -110,19 +114,19 @@ public class MapsActivity extends FragmentActivity
         // Zoom level 15 -> Streets
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
 
-        // FIRST OF ALL, we have to ensure that we have location permissions
-        // If we have, we launch the tasks; if we don't, we request permission
-        if (this.hasLocationPermission()) {
-            this.locationRelatedTasks();
-        } else {
-            this.getLocationPermission();
-        }
+        // After checking location permissions and settings,
+        // perform the location-related tasks
+        this.handleLocationTasks();
 
         // ---------- Event listeners ----------
 
+        // Observer for changes of AllPoiIds from the DB
         mViewModel.getAllPoiIds().observe(this, new Observer<List<String>>() {
             @Override
             public void onChanged(@Nullable final List<String> poiIds) {
+                Log.v(getString(R.string.google_maps_log),
+                        "Cargados POI IDs de la BD: " + poiIds);
+
                 if (poiIds != null) {
                     for (String poiId : poiIds) {
                         // Add a marker in the POI location
@@ -135,37 +139,115 @@ public class MapsActivity extends FragmentActivity
             }
         });
 
-        mBtnRegLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                unlockTrivias();
-            }
-        });
+        // "Check in" button
+        Button btnCheckInPoi = this.findViewById(R.id.btnCheckInPoi);
+        btnCheckInPoi.setOnClickListener(v -> checkInPoi());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+//        if (mMap == null) {
+//            // Obtain the SupportMapFragment and get notified
+//            // when the map is ready to be used.
+//            SupportMapFragment mapFragment = (SupportMapFragment)
+//                    getSupportFragmentManager().findFragmentById(R.id.map);
+//
+//            if (mapFragment != null) {
+//                mapFragment.getMapAsync(this);
+//            } else {
+//                Log.e(getString(R.string.google_maps_log),
+//                        "Error getting mapFragment");
+//            }
+//        }
+
+        // This verification should be done during onStart()
+        // because the system calls it when the user returns to the activity,
+        // which ensures that location permissions are granted,
+        // and location settings (best provider) are recommended,
+        // each time the activity resumes from the stopped state.
+//        this.checkLocationSettings();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        final LocationSettingsStates states =
+                LocationSettingsStates.fromIntent(data);
+
+        switch (requestCode) {
+            // Check location settings request
+            case REQUEST_CHECK_SETTINGS:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // All required changes were successfully made
+                        Log.i(getString(R.string.google_maps_log),
+                                "Recommended location settings enabled!");
+                        this.locationRelatedTasks();
+                        break;
+
+                    case Activity.RESULT_CANCELED:
+                        // The user was asked to change settings, but chose not to
+                        Log.i(getString(R.string.google_maps_log),
+                                "User chose not to change location settings");
+                        this.locationRelatedTasks();
+                        break;
+
+                    default:
+                        break;
+                }
+
+                break;
+        }
     }
 
     private void locationRelatedTasks() throws SecurityException {
-        // Replaced for the My Location layer
+        // Replaced for "My Location" layer
 //        this.updateCurrentLocation();
 
-        mMap.setMyLocationEnabled(true);
+        if (!mMap.isMyLocationEnabled()) {
+            mMap.setMyLocationEnabled(true);
+        }
+
         this.updateCurrentPlace();
         this.centerOnMyLocation();
     }
 
+    private void setUpGoogleAPIs() {
+        // Initialize the Google Maps location client.
+        mFusedLocationProvider = LocationServices
+                .getFusedLocationProviderClient(this);
+
+        // Initialize Places SDK.
+        Places.initialize(this.getApplicationContext(),
+                getString(R.string.google_maps_key));
+
+        // Create a new Places client instance.
+        mPlacesClient = Places.createClient(this);
+    }
 
     // ---------- Methods for permission request ----------
 
     /** Request location permissions to the user */
-    private void getLocationPermission() {
-        // If the user repeatedly refuses to give permission,
-        // we show them an explanation about why we need it.
-        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                this, LOCATION_ACCURACY)) {
-            this.explainPermissionRequest();
+    private void handleLocationTasks() {
+        if (!this.hasLocationPermission()) {
+            // If the user repeatedly refuses to give permission,
+            // we show them an explanation about why we need it.
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this, LOCATION_ACCURACY)) {
+                this.explainPermissionRequest();
 
-        // No explanation needed, we can directly request the permission.
+            // No explanation needed, we can directly request the permission.
+            } else {
+                this.requestLocationPermission();
+            }
         } else {
-            this.requestLocationPermission();
+            Log.i(getString(R.string.google_maps_log),
+                    "User had already granted location permissions");
+
+            this.locationRelatedTasks();
         }
     }
 
@@ -231,8 +313,11 @@ public class MapsActivity extends FragmentActivity
                     (grantResults[0] == PackageManager.PERMISSION_GRANTED);
 
             if (permissionGranted) {
-                // Finally we can do the location-related tasks
-                this.locationRelatedTasks();
+                Log.i(getString(R.string.google_maps_log),
+                        "Location permissions granted!");
+
+                // Now we should ask the user for the location settings
+                this.checkLocationSettings();
             } else {
                 // We can't disable the location functionality.
                 // We return to the main screen, but the user
@@ -240,14 +325,86 @@ public class MapsActivity extends FragmentActivity
                 this.onBackPressed();
             }
         }
+    }
 
-        // TODO? Check for other permissions this app might request
+    private void checkLocationSettings() {
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5000); // 5 seconds
+
+        // Add all of the LocationRequests that the app will be using
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest
+                .Builder().addLocationRequest(locationRequest);
+
+        Task<LocationSettingsResponse> task = LocationServices
+                .getSettingsClient(this)
+                .checkLocationSettings(builder.build());
+
+        task.addOnCompleteListener(task1 -> {
+            // CASE A) All location settings are satisfied.
+            try {
+                LocationSettingsResponse response =
+                        task1.getResult(ApiException.class);
+
+                if (response != null) {
+                    final LocationSettingsStates states =
+                            response.getLocationSettingsStates();
+                } else {
+                    Log.e(getString(R.string.google_maps_log),
+                            "Location settings request failed");
+                }
+
+                Log.v(getString(R.string.google_maps_log),
+                        "All location settings are satisfied");
+
+                // We can initialize location requests here.
+                this.locationRelatedTasks();
+
+            } catch (ApiException exception) {
+                switch (exception.getStatusCode()) {
+
+                    // CASE B) Location settings are not satisfied.
+                    // But could be fixed by showing the user a dialog.
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+
+                        try {
+                            // Cast to a resolvable exception.
+                            ResolvableApiException resolvable = (ResolvableApiException) exception;
+
+                            // Show the dialog with startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            resolvable.startResolutionForResult(this, REQUEST_CHECK_SETTINGS);
+
+                        } catch (IntentSender.SendIntentException e) {
+                            // Ignore the error.
+                            e.printStackTrace();
+                        } catch (ClassCastException e) {
+                            // Ignore, should be an impossible error.
+                            e.printStackTrace();
+                        }
+
+                        break;
+
+                    // CASE C) Location settings are not satisfied.
+                    // However, we have no way to fix the settings,
+                    // so we won't show the dialog.
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        Log.e(getString(R.string.google_maps_log),
+                                "Location settings are not satisfied,\n"
+                                        + "but there's no way to fix the settings");
+
+                        this.locationRelatedTasks();
+
+                        break;
+                }
+            }
+        });
     }
 
 
     // ---------- Methods to handle Locations and Places ----------
 
-    /** Returns the current (or nearest) Place */
+    /** Obtains the current (or nearest) Place */
     private void updateCurrentPlace() throws SecurityException {
         // Use fields to define the data types to return.
         List<Place.Field> placeFields = Arrays.asList(
@@ -267,22 +424,25 @@ public class MapsActivity extends FragmentActivity
 
                     // The response contains at least one place
                     if (response != null && !response.getPlaceLikelihoods().isEmpty()) {
-                        PlaceLikelihood mostLikely = response.getPlaceLikelihoods().get(0);
+                        List<PlaceLikelihood> likelihoods = response.getPlaceLikelihoods();
 
-                        // Update the ViewModel
-                        mViewModel.setCurrentPlace(mostLikely.getPlace());
+                        // Get the 2 most probable places
+                        for (int i = 0; (i < 2) && (i < likelihoods.size()); i++) {
+                            PlaceLikelihood pl = likelihoods.get(i);
+                            mViewModel.addProbablePlace(pl.getPlace());
+                            Log.v(getString(R.string.google_maps_log),
+                                    String.format("Current place likelihood %d: %s",
+                                            i, pl.getPlace().getName()));
+                        }
 
-                        mBtnRegLocation.setEnabled(true);
-                        // TODO? If we do something with currentPlace, it has to be HERE
+                        // Now the user can register Points of Interest
+                        Button btnCheckInPoi = this.findViewById(R.id.btnCheckInPoi);
+                        btnCheckInPoi.setEnabled(true);
 
-                        Log.i(getString(R.string.google_maps_tag),
-                                String.format("Current place is probably '%s'",
-                                        mostLikely.getPlace().getName()));
+                        // TODO? Handle currentPlace tasks HERE (if any)
                     } else {
-                        // TODO? In this case currentPlace remains null,
-                        //  this could produce exceptions in following methods
-                        Log.e(getString(R.string.google_maps_tag),
-                                "There are no known places near you");
+                        Log.i(getString(R.string.google_maps_log),
+                                "There are no known places near the user");
                     }
 
                 // CASE B) Task failed with an exception
@@ -292,8 +452,8 @@ public class MapsActivity extends FragmentActivity
                     if (exception != null) {
                         exception.printStackTrace();
                     } else {
-                        Log.e(getString(R.string.google_maps_tag),
-                                "Current place failed (no exception thrown)");
+                        Log.e(getString(R.string.google_maps_log),
+                                "Get current place failed (no exception thrown)");
                     }
                 }
             });
@@ -320,12 +480,15 @@ public class MapsActivity extends FragmentActivity
 
                     SharedPreferences sharedPrefs = PreferenceManager
                             .getDefaultSharedPreferences(this.getApplicationContext());
+
+                    // We're not editing here, so we don't have to copy the set
                     Set<String> userPoiIds = sharedPrefs
-                            .getStringSet("user_poi_ids", new HashSet<>());
+                            .getStringSet("user_poi_ids", new LinkedHashSet<>());
 
                     if (response != null) {
                         Place poi = response.getPlace();
 
+                        // Add POI to the ViewModel
                         mViewModel.addPoi(poi);
 
                         // Check if the user has unlocked this POI
@@ -337,12 +500,9 @@ public class MapsActivity extends FragmentActivity
                         }
 
                         this.setMarker(poi, unlocked);
-
-                        Log.i(getString(R.string.google_maps_tag),
-                                "POI found: " + poi.getName());
                     } else {
-                        Log.e(getString(R.string.google_maps_tag),
-                                "POI fetched null: " + request.getPlaceId());
+                        Log.e(getString(R.string.google_maps_log),
+                                "Error fetching POI: " + request.getPlaceId());
                     }
 
                 // CASE B) Task failed with an exception
@@ -352,7 +512,7 @@ public class MapsActivity extends FragmentActivity
                     if (exception != null) {
                         exception.printStackTrace();
                     } else {
-                        Log.e(getString(R.string.google_maps_tag),
+                        Log.e(getString(R.string.google_maps_log),
                                 "POI not found: " + request.getPlaceId());
                     }
                 }
@@ -362,14 +522,26 @@ public class MapsActivity extends FragmentActivity
 
     /** Add a marker in the given Place */
     private void setMarker(Place place, boolean unlocked) {
-        // LatLng is the only essential property for a marker; can't be null
+        // LatLng is the only essential property for a marker -> can't be null
         if (place.getLatLng() != null) {
             MarkerOptions markerOptions = new MarkerOptions()
                     .position(place.getLatLng())
                     .title(place.getName());        // Title is never null
 
-            if (place.getTypes() != null) {
-                markerOptions.snippet(place.getTypes().toString());
+            List<Place.Type> placeTypes = place.getTypes();
+
+            if (placeTypes != null) {
+                StringBuilder typesSnippet = new StringBuilder();
+
+                for (Place.Type type: placeTypes) {
+                    typesSnippet.append(type.toString());
+
+                    if (placeTypes.lastIndexOf(type) != placeTypes.size() - 1) {
+                        typesSnippet.append(" | ");
+                    }
+                }
+
+                markerOptions.snippet(typesSnippet.toString());
             }
 
             if (unlocked) {
@@ -380,41 +552,54 @@ public class MapsActivity extends FragmentActivity
             mMap.addMarker(markerOptions);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
         } else {
-            Log.i(getString(R.string.google_maps_tag), String.format(
-                    "Place '%s' hasn't got coordinates -> We can't set a marker",
-                    place.getName()));
+            Log.i(getString(R.string.google_maps_log),
+                    String.format("Error adding marker in '%s': No LatLng found",
+                            place.getName()));
         }
     }
 
-    private void unlockTrivias() {
-        String message = null;
-        DialogInterface.OnCancelListener onCancelListener = null;
+    private void checkInPoi() {
+        String message;
+        DialogInterface.OnCancelListener onCancelListener;
+
+        Place currentPoi = mViewModel.getCurrentPoi();
 
         // If the user is located in one of the available POIs
-        if (mViewModel.isUserInAPoi()) {
-            String currentPoiId = mViewModel.getCurrentPlace().getId();
-            String currentPoiName = mViewModel.getCurrentPlace().getName();
+        if (currentPoi != null) {
+            String currentPoiId = currentPoi.getId();
+            String currentPoiName = currentPoi.getName();
 
             SharedPreferences sharedPrefs = PreferenceManager
                     .getDefaultSharedPreferences(this.getApplicationContext());
+
+            Set<String> userPoiIds = new LinkedHashSet<>(
+                    // According to SharedPreferences documentation,
+                    // we must NOT modify the getStringSet() Set instance,
+                    // so we create a new object copying the contents
+                    sharedPrefs.getStringSet("user_poi_ids", new LinkedHashSet<>())
+            );
+
             String userEmail = sharedPrefs
                     .getString("user_email", null);
-            Set<String> poiIdSet = sharedPrefs    // TODO? getStringSet has problems
-                    .getStringSet("user_poi_ids", new HashSet<>());
 
-            // Check that the required params have valid values
-            if (poiIdSet != null && userEmail != null) {
+            // Validate params (userPoiIds can't be null)
+            if (userEmail != null) {
 
                 // CASE A) User hadn't unlocked this POI
-                if (!poiIdSet.contains(currentPoiId)) {
-                    // Add POI to this user's set
-                    poiIdSet.add(currentPoiId);
+                if (!userPoiIds.contains(currentPoiId)) {
+
+                    // Update the set of POIs of the User in SharedPreferences
+                    userPoiIds.add(currentPoiId);
+
+                    sharedPrefs.edit()
+                            .putStringSet("user_poi_ids", userPoiIds)
+                            .apply();
 
                     // Update the list of POIs of the User in the DB
                     mViewModel.unlockPoiForUser(currentPoiId, userEmail);
 
-                    message = "CONGRATULATIONS! " +
-                            "You've just unlocked all trivias from " + currentPoiName;
+                    message = String.format("CONGRATULATIONS!!!\n\n" +
+                            "You've just unlocked all trivias from:\n\n%s", currentPoiName);
 
                 // CASE B) User had already unlocked this POI
                 } else {
@@ -428,9 +613,9 @@ public class MapsActivity extends FragmentActivity
                     this.startActivity(i);
                 };
 
-            // CASE C) Something has gone wrong
-            } else {    // TODO? Improve this
-                message = "Something has gone wrong";
+            // CASE C) userEmail is null
+            } else {    // todo?
+                message = "Sorry! Something has gone wrong";
 
                 // Go back to main activity
                 onCancelListener = dialog -> this.onBackPressed();
@@ -463,23 +648,10 @@ public class MapsActivity extends FragmentActivity
             if (mapView != null) {
                 // 0x2 -> ID found using the Layout Inspector
                 mapView.findViewById(0x2).performClick();
+
+                Log.v(getString(R.string.google_maps_log),
+                        "Centered map in the user location");
             }
         }
-    }
-
-
-    // ---------- Google Map callbacks ----------
-
-    @Override
-    public boolean onMyLocationButtonClick() {
-        // true -> the default behavior should not occur
-        // false -> the default behavior should occur
-        // Default behavior = Center the camera on the user location.
-        return false;   // TODO?
-    }
-
-    @Override
-    public void onMyLocationClick(@NonNull Location location) {
-        // TODO: Add some behavior? (no default behavior)
     }
 }

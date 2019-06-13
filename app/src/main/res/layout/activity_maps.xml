@@ -19,7 +19,7 @@
         tools:context=".ui.MapsActivity" />
 
     <Button
-        android:id="@+id/btnRegLocation"
+        android:id="@+id/btnCheckInPoi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -31,7 +31,7 @@
         android:background="#359c5e"
         android:enabled="false"
         android:padding="8dp"
-        android:text="Register location"
+        android:text="Check In POI"
         android:textColor="#ffffff"
         app:layout_constraintBottom_toBottomOf="@+id/map"
         app:layout_constraintEnd_toEndOf="parent"

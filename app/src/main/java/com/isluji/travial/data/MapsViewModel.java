@@ -1,7 +1,6 @@
 package com.isluji.travial.data;
 
 import android.app.Application;
-import android.location.Location;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -9,27 +8,27 @@ import androidx.lifecycle.LiveData;
 
 import com.google.android.libraries.places.api.model.Place;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 public class MapsViewModel extends AndroidViewModel {
 
     private MapsRepository mRepository;
 
-    private LiveData<List<String>> mAllPoiIds;
-    private Set<Place> mPoiSet;
+    private LiveData<List<String>> mAppPoiIds;
 
-    private Place mCurrentPlace;
+    private Set<Place> mAppPois;
+    private Set<Place> mProbablePlaces;
 
     public MapsViewModel(@NonNull Application app) {
         super(app);
 
         mRepository = new MapsRepository(app);
-        mAllPoiIds = mRepository.getAllPoiIds();
+        mAppPoiIds = mRepository.getAllPoiIds();
 
-        mPoiSet = new HashSet<>();
+        mAppPois = new LinkedHashSet<>();
+        mProbablePlaces = new LinkedHashSet<>();
     }
 
 
@@ -37,7 +36,7 @@ public class MapsViewModel extends AndroidViewModel {
     // (they completely hide the implementation from the UI)
 
     public LiveData<List<String>> getAllPoiIds() {
-        return mAllPoiIds;
+        return mAppPoiIds;
     }
 
     public void unlockPoiForUser(String poiId, String userEmail) {
@@ -45,20 +44,26 @@ public class MapsViewModel extends AndroidViewModel {
     }
 
     public void addPoi(Place poi) {
-        mPoiSet.add(poi);
+        mAppPois.add(poi);
     }
 
-    public Place getCurrentPlace() {
-        return mCurrentPlace;
+    public void addProbablePlace(Place probablePlace) {
+        mProbablePlaces.add(probablePlace);
     }
 
-    public void setCurrentPlace(Place currentPlace) {
-        this.mCurrentPlace = currentPlace;
-    }
+    // Returns the most probable current POI
+    // and null if the user isn't located in a POI
+    public Place getCurrentPoi() {
+        List<String> poiIds = mAppPoiIds.getValue();
 
-    public boolean isUserInAPoi() {
-        return Objects.requireNonNull(
-                mAllPoiIds.getValue()
-        ).contains(mCurrentPlace.getId());
+        if (poiIds != null) {
+            for (Place probPlace : mProbablePlaces) {
+                if (poiIds.contains(probPlace.getId())) {
+                    return probPlace;
+                }
+            }
+        }
+
+        return null;
     }
 }

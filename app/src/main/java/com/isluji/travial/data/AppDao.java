@@ -15,6 +15,7 @@ import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
 import java.util.List;
+import java.util.Set;
 
 @Dao
 public interface AppDao {
@@ -28,9 +29,8 @@ public interface AppDao {
     LiveData<List<String>> getAllPoiIds();
 
     @Transaction
-    @Query("SELECT * FROM trivia WHERE poi_id IN " +
-            "(SELECT unlocked_poi_ids FROM user WHERE email = :userEmail)")
-    LiveData<List<TriviaWithQuestions>> getUserTrivias(String userEmail);
+    @Query("SELECT * FROM trivia WHERE poi_id IN (:userPoiIds)")
+    LiveData<List<TriviaWithQuestions>> getUserTrivias(Set<String> userPoiIds);
 
     @Query("SELECT * FROM trivia_result WHERE user_email = :userEmail ORDER BY id ASC")
     LiveData<List<TriviaResult>> getUserResults(String userEmail);
@@ -58,7 +58,7 @@ public interface AppDao {
     // --------------- UPDATES ---------------
 
     @Update
-    void updateUser(User user);
+    int updateUser(User user);
 
     // --------------- DELETES ---------------
 

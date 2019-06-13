@@ -1,5 +1,6 @@
 package com.isluji.travial.ui;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.graphics.Color;
@@ -58,7 +59,6 @@ public class ResultFragment extends Fragment {
         // Evaluate the recently completed trivia
         // and store the result in the DB
         TriviaResult result = mViewModel.evaluateSelectedTrivia();
-        Log.v("app-db", "TriviaResult: " + new Gson().toJson(result));
 
         try {
             mViewModel.insertResult(result);
@@ -81,6 +81,7 @@ public class ResultFragment extends Fragment {
         int scoreId, messageId, imgId, colorId;
 
         if (twq.isValidScore(result.getScore())) {
+
             if (twq.isPassed(result.getScore())) {
                 colorId = Color.GREEN;
                 scoreId = R.string.trivia_result_passed;
@@ -100,6 +101,7 @@ public class ResultFragment extends Fragment {
             txtMessage.setText(messageId);
             txtScore.setText(scoreText);
             imgResult.setImageResource(imgId);
+
         } else {
             txtMessage.setTextColor(Color.RED);
             txtMessage.setText("Evaluation failed");
@@ -109,20 +111,31 @@ public class ResultFragment extends Fragment {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                assert getFragmentManager() != null;
-                getFragmentManager().popBackStack();
-                getFragmentManager().popBackStack();
+                FragmentManager fm = getFragmentManager();
+
+                if (fm != null) {
+                    getFragmentManager().popBackStack();
+                    getFragmentManager().popBackStack();
+                } else {
+                    // todo?
+                }
             }
         });
 
         btnResults.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Objects.requireNonNull(getFragmentManager())
-                    .beginTransaction()
-                    .replace(R.id.app_bar_main, new ResultListFragment())
-                    .addToBackStack(null)
-                    .commit();
+                FragmentManager fm = getFragmentManager();
+
+                if (fm != null) {
+                    getFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.app_bar_main, new ResultListFragment())
+                            .addToBackStack(null)
+                            .commit();
+                } else {
+                    // todo?
+                }
             }
         });
 

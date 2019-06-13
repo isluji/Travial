@@ -2,7 +2,6 @@ package com.isluji.travial.data;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.room.Database;
@@ -44,7 +43,7 @@ public abstract class AppDatabase extends RoomDatabase {
                     // Creates the database builder.
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, roomDbName)
 
-                    // TODO? Migration path from version 1 to 2
+                    // TODO? Migration paths between versions
                     // Wipes and rebuilds instead of migrating if no Migration object.
                     .fallbackToDestructiveMigration()
 
@@ -53,8 +52,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
                     // Finally builds the database.
                     .build();
-
-                    Log.v(roomDbName,"Se ha construido la BD ( rdbBuilder.build() )");
                 }
             }
         }
@@ -69,9 +66,7 @@ public abstract class AppDatabase extends RoomDatabase {
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate(db);
 
-            Log.v(roomDbName, "Ejecutando AppDB onCreate()");
-
-//            new PopulateDbAsync(INSTANCE).execute();
+            new PopulateDbAsync(INSTANCE).execute();
         }
 
         /** Called every time database is opened */
@@ -79,11 +74,9 @@ public abstract class AppDatabase extends RoomDatabase {
         public void onOpen(@NonNull SupportSQLiteDatabase db) {
             super.onOpen(db);
 
-            Log.v(roomDbName, "Ejecutando AppDB onOpen()");
-
             // If you want to keep the data through app restarts,
             // comment out the following line.
-            new PopulateDbAsync(INSTANCE).execute();
+//            new PopulateDbAsync(INSTANCE).execute();
         }
     };
 
@@ -103,14 +96,14 @@ public abstract class AppDatabase extends RoomDatabase {
         protected Void doInBackground(final Void... params) {
             // Start the app with a clean database every time.
             // Not needed if you only populate on creation.
-            this.clearDatabase();
+//            this.clearDatabase();
 
             this.insertTrivia_FuenteDelRey();
             this.insertTrivia_Castillo();
             this.insertTrivia_Cementerio();
 
-            // These parks are not really POIs but will do the trick
-            // as being the nearest places for me to test
+            // JUST FOR TESTING: Places near me for easy testing
+            this.insertTriviaExample("Academia El Lapicero", "ChIJJTeBz_uQbQ0RNIJCB2GWSjk");
             this.insertTriviaExample("Parque de Avilés", "ChIJPYupnvmQbQ0R5qpRb66ggos");
             this.insertTriviaExample("Parque de la Inmaculada", "ChIJEy-74GiRbQ0RiQwJpKZ25fE");
             this.insertTriviaExample("Parque de los Médicos", "ChIJvR8MvPmQbQ0RAGMKRheVVN8");

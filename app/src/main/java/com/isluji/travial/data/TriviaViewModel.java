@@ -12,6 +12,7 @@ import com.isluji.travial.model.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import androidx.lifecycle.AndroidViewModel;
@@ -54,8 +55,8 @@ public class TriviaViewModel extends AndroidViewModel {
     // ***** Wrapper methods *****
     // (they completely hide the implementation from the UI)
 
-    public LiveData<List<TriviaWithQuestions>> getUserTrivias(String userEmail) {
-        return mRepository.getUserTrivias(userEmail);
+    public LiveData<List<TriviaWithQuestions>> getUserTrivias(Set<String> userPoiIds) {
+        return mRepository.getUserTrivias(userPoiIds);
     }
 
     public LiveData<List<TriviaResult>> getUserResults(String userEmail) {

@@ -2,6 +2,7 @@ package com.isluji.travial.data;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -25,16 +26,22 @@ class MapsRepository {
         mAllPoiIds = mDao.getAllPoiIds();
     }
 
-    // Room executes all queries on a separate thread.
-    // Observed LiveData will notify the observer when the data has changed.
+
     LiveData<List<String>> getAllPoiIds() {
         return mAllPoiIds;
     }
+
+
+    // ***** Wrapper methods for the AsyncTask queries *****
 
     void unlockPoiForUser(String poiId, String userEmail) {
         new unlockPoiForUser_AsyncTask(mDao).execute(poiId, userEmail);
     }
 
+
+    // ***** AsyncTask queries (inner classes) *****
+
+    // AsyncTask for unlockPoiForUser(poiId, userEmail)
     private static class unlockPoiForUser_AsyncTask extends AsyncTask<String, Void, Void> {
 
         private AppDao mAsyncTaskDao;
@@ -55,7 +62,9 @@ class MapsRepository {
             user.unlockPoi(poiId);
 
             // Update the User in the DB with the updated set of POIs
-            mAsyncTaskDao.updateUser(user);
+            int updatedRows = mAsyncTaskDao.updateUser(user);
+            Log.v("trivia-list-logs",
+                    "DB: User -> Updated rows: " + updatedRows);
 
             return null;
         }
