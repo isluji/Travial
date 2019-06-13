@@ -89,8 +89,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         this.setContentView(R.layout.activity_main);
+
         this.setTitle(R.string.app_name);
 
         // Set up Google APIs
@@ -463,8 +463,7 @@ public class MainActivity extends AppCompatActivity
         this.getSupportFragmentManager().popBackStack();
 
         String goodbye = getString(R.string.goodbye);
-        Toast.makeText(this.getApplicationContext(), goodbye, Toast.LENGTH_LONG)
-                .show();
+        Toast.makeText(this, goodbye, Toast.LENGTH_LONG).show();
     }
 
     private void updateUiOnUserChange() {
@@ -555,7 +554,7 @@ public class MainActivity extends AppCompatActivity
             if (email != null && googleId != null) {
                 // Show welcome message
                 String welcome = getString(R.string.welcome) + mGoogleAccount.getDisplayName();
-                Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, welcome, Toast.LENGTH_LONG).show();
 
                 // If user exists, retrieve its data from the DB.
                 // If he wasn't registered, insert a new user in the DB.

@@ -24,7 +24,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#f4bf42"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:weightSum="6">
 
                 <TextView
                     android:id="@+id/textPosition"
@@ -40,6 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/text_margin"
+                    android:layout_weight="4"
                     android:text="Statement"
                     android:textAppearance="?attr/textAppearanceListItem" />
 
@@ -48,6 +50,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/text_margin"
+                    android:layout_weight="1"
                     android:text="Score"
                     android:textAppearance="?attr/textAppearanceListItem" />
             </LinearLayout>

@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
@@ -73,16 +74,14 @@ public class MapsActivity extends FragmentActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_maps);
+        this.setContentView(R.layout.activity_maps);
 
         // Initialize Google Maps & Places SDKs
         this.setUpGoogleAPIs();
 
         if (mMap == null) {
-
             SupportMapFragment mapFragment = (SupportMapFragment)
-                    getSupportFragmentManager().findFragmentById(R.id.map);
+                    this.getSupportFragmentManager().findFragmentById(R.id.map);
 
             if (mapFragment != null) {
                 mapFragment.getMapAsync(this);
@@ -133,8 +132,6 @@ public class MapsActivity extends FragmentActivity
                         // Update the set of POIs in the ViewModel
                         addPoiToMap(poiId);
                     }
-                } else {
-                    // TODO? Qué hacer si no hay POIs
                 }
             }
         });
@@ -221,8 +218,7 @@ public class MapsActivity extends FragmentActivity
                 .getFusedLocationProviderClient(this);
 
         // Initialize Places SDK.
-        Places.initialize(this.getApplicationContext(),
-                getString(R.string.google_maps_key));
+        Places.initialize(this, getString(R.string.google_maps_key));
 
         // Create a new Places client instance.
         mPlacesClient = Places.createClient(this);
@@ -298,7 +294,7 @@ public class MapsActivity extends FragmentActivity
      *
      *  User response is handled in onRequestPermissionsResult()
      */
-    public void requestLocationPermission() {
+    private void requestLocationPermission() {
         ActivityCompat.requestPermissions(this,
                 new String[]{LOCATION_ACCURACY}, MY_LOCATION_REQUEST
         );
@@ -463,7 +459,7 @@ public class MapsActivity extends FragmentActivity
         // Specify the fields to return.
         List<Place.Field> placeFields = Arrays.asList(
                 Place.Field.ID, Place.Field.NAME,
-                Place.Field.LAT_LNG, Place.Field.VIEWPORT,
+                Place.Field.LAT_LNG, /*Place.Field.VIEWPORT,*/
                 Place.Field.TYPES, Place.Field.PHOTO_METADATAS);
 
         // Construct a request object, passing the place ID and fields array.
@@ -487,6 +483,17 @@ public class MapsActivity extends FragmentActivity
 
                     if (response != null) {
                         Place poi = response.getPlace();
+
+                        List<PhotoMetadata> photoMetadatas = poi.getPhotoMetadatas();
+
+                        if (photoMetadatas != null) {
+                            for (PhotoMetadata pm : photoMetadatas) {
+                                Log.v(getString(R.string.google_maps_log),
+                                        String.format("POI PhotoMetadata -> "
+                                                + "a: %s | attributions: %s",
+                                                pm.a(), pm.getAttributions()));
+                            }
+                        }
 
                         // Add POI to the ViewModel
                         mViewModel.addPoi(poi);

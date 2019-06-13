@@ -101,7 +101,9 @@ public class TriviaViewModel extends AndroidViewModel {
 
         // Get the current user's email address
         SharedPreferences sharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(this.getApplication().getApplicationContext());
+                .getDefaultSharedPreferences(
+                        this.getApplication().getApplicationContext());
+
         String userEmail = sharedPrefs.getString("user_email",
                 this.getApplication().getString(R.string.placeholder_user_email));
 

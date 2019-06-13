@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaListAdapter;
+import com.isluji.travial.data.MapsViewModel;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.TriviaWithQuestions;
 
@@ -96,8 +97,6 @@ public class TriviaListFragment extends Fragment {
                 public void onChanged(@Nullable final List<TriviaWithQuestions> trivias) {
                     // Update the cached copy of the trivias in the adapter.
                     adapter.setTrivias(trivias);
-                    Log.v(getString(R.string.trivia_list_log),
-                            new Gson().toJson(trivias));
                 }
             });
         }
