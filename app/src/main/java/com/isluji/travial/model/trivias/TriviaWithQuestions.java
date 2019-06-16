@@ -1,4 +1,4 @@
-package com.isluji.travial.model;
+package com.isluji.travial.model.trivias;
 
 import android.util.Log;
 import android.view.View;
@@ -15,15 +15,15 @@ import com.isluji.travial.misc.TriviaUtils;
 
 import java.util.List;
 
-/** POJO to include OneToMany Relation with TriviaQuestion */
+/** POJO to include OneToMany Relation with Question */
 public class TriviaWithQuestions {
 
     @Embedded
     private Trivia trivia;
 
     @Relation(parentColumn = "id", entityColumn = "trivia_id",
-              entity = TriviaQuestion.class)
-    private List<TriviaQuestionWithAnswers> questions;
+              entity = Question.class)
+    private List<QuestionWithAnswers> questions;
 
     public TriviaWithQuestions(Trivia trivia) {
         this.trivia = trivia;
@@ -40,11 +40,11 @@ public class TriviaWithQuestions {
         this.trivia = trivia;
     }
 
-    public List<TriviaQuestionWithAnswers> getQuestions() {
+    public List<QuestionWithAnswers> getQuestions() {
         return questions;
     }
 
-    public void setQuestions(List<TriviaQuestionWithAnswers> questions) {
+    public void setQuestions(List<QuestionWithAnswers> questions) {
         this.questions = questions;
     }
 
@@ -58,7 +58,7 @@ public class TriviaWithQuestions {
     public double getMaxScore() {
         int maxScore = 0;
 
-        for (TriviaQuestionWithAnswers qwa: questions) {
+        for (QuestionWithAnswers qwa: questions) {
             maxScore += qwa.getQuestion().getScore();
         }
 
@@ -80,12 +80,12 @@ public class TriviaWithQuestions {
 
         for (int i = 0; i < cvQuestions.size(); i++) {
             CardView cvQuestion = (CardView) cvQuestions.get(i);
-            TriviaQuestionWithAnswers qwa = this.getQuestions().get(i);
+            QuestionWithAnswers qwa = this.getQuestions().get(i);
 
             RadioGroup rgOptions = cvQuestion.findViewWithTag(rv.getContext().getString(R.string.rg_answers_tag));
             RadioButton rbSelected = cvQuestion.findViewById(rgOptions.getCheckedRadioButtonId());
 
-            for (TriviaAnswer answer : qwa.getAnswers()) {
+            for (Answer answer : qwa.getAnswers()) {
                 if (rbSelected != null) {
                     answer.setSelected(answer.getText().contentEquals(rbSelected.getText()));
                 } else {

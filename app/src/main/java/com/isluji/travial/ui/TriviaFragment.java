@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaAdapter;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.model.TriviaQuestionWithAnswers;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.trivias.QuestionWithAnswers;
+import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,6 +36,7 @@ public class TriviaFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
     private TriviaViewModel mViewModel;
+    private RecyclerView mRecyclerView;
 
     /**
      * Use this factory method to create a new instance of
@@ -57,18 +58,19 @@ public class TriviaFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_question_list, container, false);
 
         if (view instanceof RecyclerView) {
-
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            final TriviaAdapter adapter = new TriviaAdapter();
-
-            recyclerView.setAdapter(adapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mRecyclerView = (RecyclerView) view;
 
             // Get the shared ViewModel between MainActivity and its fragments
             mViewModel = ViewModelProviders
-                    .of(Objects.requireNonNull(this.getActivity())) // TODO?
+                    .of(Objects.requireNonNull(this.getActivity()))
                     .get(TriviaViewModel.class);
+
+            TriviaAdapter adapter = new TriviaAdapter();
+            final LinearLayoutManager layoutManager =
+                    new LinearLayoutManager(mRecyclerView.getContext());
+
+            mRecyclerView.setAdapter(adapter);
+            mRecyclerView.setLayoutManager(layoutManager);
 
             SharedPreferences sharedPrefs = PreferenceManager
                     .getDefaultSharedPreferences(this.getActivity().getApplicationContext());
@@ -79,14 +81,12 @@ public class TriviaFragment extends Fragment {
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mViewModel.getUserTrivias(userPoiIds).observe(this, new Observer<List<TriviaWithQuestions>>() {
-                @Override
-                public void onChanged(final List<TriviaWithQuestions> trivias) {
-                    // Update the cached copy of the selected trivia in the adapter.
-                    adapter.setSelectedTrivia(
-                            trivias.get(mViewModel.getSelectedTriviaPosition())
-                    );
-                }
+            mViewModel.getUserTrivias(userPoiIds).observe(this, trivias -> {
+                // Update the cached copy of the selected trivia in the adapter.
+//                adapter.submitList(list);
+                adapter.setSelectedTrivia(
+                        trivias.get(mViewModel.getSelectedTriviaPosition())
+                );
             });
         }
 
@@ -126,7 +126,14 @@ public class TriviaFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(TriviaQuestionWithAnswers question);
+        void onListFragmentInteraction(QuestionWithAnswers question);
     }
 
+    public void resetTrivia() {
+        TriviaAdapter adapter = (TriviaAdapter) mRecyclerView.getAdapter();
+
+        if (adapter != null) {
+            adapter.resetTrivia();
+        }
+    }
 }

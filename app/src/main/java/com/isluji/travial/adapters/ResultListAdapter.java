@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.isluji.travial.R;
-import com.isluji.travial.model.TriviaResult;
+import com.isluji.travial.model.trivias.Result;
 import com.isluji.travial.ui.ResultListFragment.OnListFragmentInteractionListener;
 
 import java.util.Collections;
@@ -25,7 +25,7 @@ public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.Vi
     private final OnListFragmentInteractionListener mListener;
 
     // Cached copy of the user's results
-    private List<TriviaResult> mResultList;
+    private List<Result> mResultList;
 
     public ResultListAdapter(OnListFragmentInteractionListener listener) {
         mResultList = Collections.emptyList();
@@ -70,17 +70,17 @@ public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.Vi
         return mResultList.size();
     }
 
-    public void setResults(List<TriviaResult> results) {
+    public void setResults(List<Result> results) {
         mResultList = results;
         this.notifyDataSetChanged();
     }
 
 
-    /** Result ViewHolder */
+    /** Result QuestionViewHolder */
     class ViewHolder extends RecyclerView.ViewHolder {
-        private final View mView;
-        private TriviaResult mItem;
+        private Result mItem;
 
+        private final View mView;
         private final TextView mTxtTriviaName;
         private final TextView mTxtScore;
         private final TextView mTxtDateTime;

@@ -6,12 +6,10 @@ import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
-import com.google.gson.Gson;
-import com.isluji.travial.model.TriviaResult;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.trivias.Result;
+import com.isluji.travial.model.trivias.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +19,7 @@ class TriviaRepository {
     private AppDao mDao;
 
     private LiveData<List<TriviaWithQuestions>> mUserTrivias;
-    private LiveData<List<TriviaResult>> mUserResults;
+    private LiveData<List<Result>> mUserResults;
 
     // Constructor that gets a handle to the database
     // and initializes the member variables.
@@ -37,14 +35,14 @@ class TriviaRepository {
         return mDao.getUserTrivias(userPoiIds);
     }
 
-    LiveData<List<TriviaResult>> getUserResults(String userEmail) {
+    LiveData<List<Result>> getUserResults(String userEmail) {
         return mDao.getUserResults(userEmail);
     }
 
 
     // ***** Wrapper methods for the AsyncTask queries *****
 
-    long insertResult(TriviaResult newResult)
+    long insertResult(Result newResult)
             throws ExecutionException, InterruptedException {
         return new insertResult_AsyncTask(mDao).execute(newResult).get();
     }
@@ -58,7 +56,7 @@ class TriviaRepository {
     // ***** AsyncTask queries (inner classes) *****
 
     // AsyncTask for insertResult(newResult)
-    private static class insertResult_AsyncTask extends AsyncTask<TriviaResult, Void, Long> {
+    private static class insertResult_AsyncTask extends AsyncTask<Result, Void, Long> {
 
         private AppDao mAsyncTaskDao;
 
@@ -67,7 +65,7 @@ class TriviaRepository {
         }
 
         @Override
-        protected Long doInBackground(final TriviaResult... params) {
+        protected Long doInBackground(final Result... params) {
             return mAsyncTaskDao.insertResult(params[0]);
         }
     }

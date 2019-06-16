@@ -8,16 +8,23 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -36,12 +43,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPhotoResponse;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
@@ -50,15 +60,19 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.isluji.travial.R;
 import com.isluji.travial.data.MapsViewModel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 public class MapsActivity extends FragmentActivity
-        implements OnMapReadyCallback/*,
-        GoogleMap.OnMyLocationButtonClickListener,
-        GoogleMap.OnMyLocationClickListener*/ {
+        implements OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnInfoWindowClickListener {
 
     // Depending on the location accuracy that we choose,
     // we set these 2 variables to simplify the code
@@ -66,30 +80,46 @@ public class MapsActivity extends FragmentActivity
     private static final int MY_LOCATION_REQUEST = LOCATION_ACCURACY.length();
     private static final int REQUEST_CHECK_SETTINGS = 33;
 
+    // Tag for the maps-related logs
+    private String MAPS_LOG_TAG;
+
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProvider;
     private PlacesClient mPlacesClient;
     private MapsViewModel mViewModel;
+
+    // Matches each Marker with its place's photo,
+    // so we can distinguish which photo to use in the InfoWindowAdapter
+    private Map<Marker, Bitmap> mMarkersWithPhoto = new HashMap<>();
+
+    // Keeps track of the last selected marker (though it may no longer be selected).
+    // This is useful for refreshing the info window.
+    private Marker mLastSelectedMarker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_maps);
 
+        MAPS_LOG_TAG = getString(R.string.google_maps_log);
+
         // Initialize Google Maps & Places SDKs
         this.setUpGoogleAPIs();
 
-        if (mMap == null) {
+//        if (mMap == null) {
             SupportMapFragment mapFragment = (SupportMapFragment)
                     this.getSupportFragmentManager().findFragmentById(R.id.map);
+
+            // TODO? new OnMapAndViewReadyListener(mapFragment, this);
 
             if (mapFragment != null) {
                 mapFragment.getMapAsync(this);
             } else {
-                Log.e(getString(R.string.google_maps_log),
+                Log.e(MAPS_LOG_TAG,
                         "Error getting mapFragment");
             }
-        }
+//        }
 
         // Get a new or existing ViewModel from the ViewModelProvider.
         mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
@@ -110,12 +140,28 @@ public class MapsActivity extends FragmentActivity
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Zoom level 15 -> Streets
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        // Setting an info window adapter allows us to change
+        // both the contents and look of the info window.
+        mMap.setInfoWindowAdapter(new PoiInfoWindowAdapter());
+
+        // Set listeners for marker events.
+        // See the bottom of this class for their behavior.
+        mMap.setOnMarkerClickListener(this);
+//        mMap.setOnMarkerDragListener(this);
+        mMap.setOnInfoWindowClickListener(this);
+//        mMap.setOnInfoWindowCloseListener(this);
+//        mMap.setOnInfoWindowLongClickListener(this);
+
+        // Override the default content description on the view,
+        // for accessibility mode. Ideally this string would be localised.
+        mMap.setContentDescription("Map with all the Points of Interest");
 
         // After checking location permissions and settings,
         // perform the location-related tasks
         this.handleLocationTasks();
+
+        // Zoom level 15 -> Streets
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
 
         // ---------- Event listeners ----------
 
@@ -123,8 +169,8 @@ public class MapsActivity extends FragmentActivity
         mViewModel.getAllPoiIds().observe(this, new Observer<List<String>>() {
             @Override
             public void onChanged(@Nullable final List<String> poiIds) {
-                Log.v(getString(R.string.google_maps_log),
-                        "Cargados POI IDs de la BD: " + poiIds);
+                Log.v(MAPS_LOG_TAG,
+                        "Cargados POI IDs de la BD");
 
                 if (poiIds != null) {
                     for (String poiId : poiIds) {
@@ -145,26 +191,14 @@ public class MapsActivity extends FragmentActivity
     protected void onStart() {
         super.onStart();
 
-//        if (mMap == null) {
-//            // Obtain the SupportMapFragment and get notified
-//            // when the map is ready to be used.
-//            SupportMapFragment mapFragment = (SupportMapFragment)
-//                    getSupportFragmentManager().findFragmentById(R.id.map);
-//
-//            if (mapFragment != null) {
-//                mapFragment.getMapAsync(this);
-//            } else {
-//                Log.e(getString(R.string.google_maps_log),
-//                        "Error getting mapFragment");
-//            }
-//        }
-
         // This verification should be done during onStart()
         // because the system calls it when the user returns to the activity,
         // which ensures that location permissions are granted,
         // and location settings (best provider) are recommended,
         // each time the activity resumes from the stopped state.
-//        this.checkLocationSettings();
+//        if (this.checkMapReady()) {
+//          this.checkLocationSettings();
+//        }
     }
 
     @Override
@@ -180,14 +214,14 @@ public class MapsActivity extends FragmentActivity
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
-                        Log.i(getString(R.string.google_maps_log),
+                        Log.i(MAPS_LOG_TAG,
                                 "Recommended location settings enabled!");
                         this.locationRelatedTasks();
                         break;
 
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
-                        Log.i(getString(R.string.google_maps_log),
+                        Log.i(MAPS_LOG_TAG,
                                 "User chose not to change location settings");
                         this.locationRelatedTasks();
                         break;
@@ -209,7 +243,6 @@ public class MapsActivity extends FragmentActivity
         }
 
         this.updateCurrentPlace();
-        this.centerOnMyLocation();
     }
 
     private void setUpGoogleAPIs() {
@@ -240,7 +273,7 @@ public class MapsActivity extends FragmentActivity
                 this.requestLocationPermission();
             }
         } else {
-            Log.i(getString(R.string.google_maps_log),
+            Log.i(MAPS_LOG_TAG,
                     "User had already granted location permissions");
 
             this.locationRelatedTasks();
@@ -309,7 +342,7 @@ public class MapsActivity extends FragmentActivity
                     (grantResults[0] == PackageManager.PERMISSION_GRANTED);
 
             if (permissionGranted) {
-                Log.i(getString(R.string.google_maps_log),
+                Log.i(MAPS_LOG_TAG,
                         "Location permissions granted!");
 
                 // Now we should ask the user for the location settings
@@ -346,11 +379,11 @@ public class MapsActivity extends FragmentActivity
                     final LocationSettingsStates states =
                             response.getLocationSettingsStates();
                 } else {
-                    Log.e(getString(R.string.google_maps_log),
+                    Log.e(MAPS_LOG_TAG,
                             "Location settings request failed");
                 }
 
-                Log.v(getString(R.string.google_maps_log),
+                Log.v(MAPS_LOG_TAG,
                         "All location settings are satisfied");
 
                 // We can initialize location requests here.
@@ -385,7 +418,7 @@ public class MapsActivity extends FragmentActivity
                     // However, we have no way to fix the settings,
                     // so we won't show the dialog.
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        Log.e(getString(R.string.google_maps_log),
+                        Log.e(MAPS_LOG_TAG,
                                 "Location settings are not satisfied,\n"
                                         + "but there's no way to fix the settings");
 
@@ -426,18 +459,27 @@ public class MapsActivity extends FragmentActivity
                         for (int i = 0; (i < 2) && (i < likelihoods.size()); i++) {
                             PlaceLikelihood pl = likelihoods.get(i);
                             mViewModel.addProbablePlace(pl.getPlace());
-                            Log.v(getString(R.string.google_maps_log),
+
+                            Log.v(MAPS_LOG_TAG,
                                     String.format("Current place likelihood %d: %s",
                                             i, pl.getPlace().getName()));
                         }
 
+                        // **********************************************
+                        // NOW WE HAVE THE CURRENT PLACE -> DO TASKS HERE
+                        // **********************************************
+
+                        // Center the camera in the current place
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(
+                                mViewModel.getMostProbableCurrentPlace().getLatLng()));
+                        Log.v(MAPS_LOG_TAG,
+                                "Centered camera in the most probable place");
+
                         // Now the user can register Points of Interest
                         Button btnCheckInPoi = this.findViewById(R.id.btnCheckInPoi);
                         btnCheckInPoi.setEnabled(true);
-
-                        // TODO? Handle currentPlace tasks HERE (if any)
                     } else {
-                        Log.i(getString(R.string.google_maps_log),
+                        Log.i(MAPS_LOG_TAG,
                                 "There are no known places near the user");
                     }
 
@@ -448,7 +490,7 @@ public class MapsActivity extends FragmentActivity
                     if (exception != null) {
                         exception.printStackTrace();
                     } else {
-                        Log.e(getString(R.string.google_maps_log),
+                        Log.e(MAPS_LOG_TAG,
                                 "Get current place failed (no exception thrown)");
                     }
                 }
@@ -464,15 +506,16 @@ public class MapsActivity extends FragmentActivity
 
         // Construct a request object, passing the place ID and fields array.
         FetchPlaceRequest request = FetchPlaceRequest
-                .builder(placeId, placeFields).build();
+                .builder(placeId, placeFields)
+                .build();
 
         // Send the place request
         mPlacesClient.fetchPlace(request)
-            .addOnCompleteListener(task -> {
+            .addOnCompleteListener(placeTask -> {
 
                 // CASE A) Task completed successfully
-                if (task.isSuccessful()) {
-                    FetchPlaceResponse response = task.getResult();
+                if (placeTask.isSuccessful()) {
+                    FetchPlaceResponse placeResponse = placeTask.getResult();
 
                     SharedPreferences sharedPrefs = PreferenceManager
                             .getDefaultSharedPreferences(this.getApplicationContext());
@@ -481,45 +524,101 @@ public class MapsActivity extends FragmentActivity
                     Set<String> userPoiIds = sharedPrefs
                             .getStringSet("user_poi_ids", new LinkedHashSet<>());
 
-                    if (response != null) {
-                        Place poi = response.getPlace();
-
-                        List<PhotoMetadata> photoMetadatas = poi.getPhotoMetadatas();
-
-                        if (photoMetadatas != null) {
-                            for (PhotoMetadata pm : photoMetadatas) {
-                                Log.v(getString(R.string.google_maps_log),
-                                        String.format("POI PhotoMetadata -> "
-                                                + "a: %s | attributions: %s",
-                                                pm.a(), pm.getAttributions()));
-                            }
-                        }
+                    if (placeResponse != null) {
+                        Place poi = placeResponse.getPlace();
 
                         // Add POI to the ViewModel
                         mViewModel.addPoi(poi);
 
+                        // ****************************************
+                        // NOW WE HAVE THE PLACE -> DO TASKS HERE
+                        // ****************************************
+
                         // Check if the user has unlocked this POI
                         // in order to change the color of the marker
-                        boolean unlocked = false;
+                        boolean unlocked;
 
                         if (userPoiIds != null) {
                             unlocked = userPoiIds.contains(poi.getId());
+                        } else {
+                            unlocked = false;
                         }
 
-                        this.setMarker(poi, unlocked);
+                        /* ---------- PHOTO REQUEST ---------- */
+
+                        List<PhotoMetadata> photoMetadatas = poi.getPhotoMetadatas();
+
+                        // Place has at least a photo
+                        if (photoMetadatas != null && !photoMetadatas.isEmpty()) {
+                            // Initialize the params for addPoiMarker()
+                            PhotoMetadata photoMetadata = photoMetadatas.get(0);
+                            String photoAttribs = photoMetadata.getAttributions();
+
+                            // Create a FetchPhotoRequest.
+                            FetchPhotoRequest photoRequest = FetchPhotoRequest
+                                    .builder(photoMetadata)
+                                    .setMaxWidth(300) // Optional.
+                                    .setMaxHeight(300) // Optional.
+                                    .build();
+
+                            mPlacesClient.fetchPhoto(photoRequest)
+
+                                    .addOnCompleteListener(photoTask -> {
+                                        Bitmap poiPhoto = null;
+
+                                        // CASE A) Photo fetched successfully
+                                        if (photoTask.isSuccessful()) {
+                                            FetchPhotoResponse photoResponse = photoTask.getResult();
+
+                                            if (photoResponse != null) {
+                                                poiPhoto = photoResponse.getBitmap();
+                                            }
+
+                                        // CASE B) Failed to fetch the photo
+                                        } else {
+                                            Exception exception = photoTask.getException();
+
+                                            if (exception instanceof ApiException) {
+                                                ApiException apiException = (ApiException) exception;
+                                                int statusCode = apiException.getStatusCode();
+
+                                                // Handle error with given status code.
+                                                Log.e(MAPS_LOG_TAG,
+                                                        "Place not found: " + exception.getMessage());
+                                            }
+                                        }
+
+                                        // ****************************************
+                                        // NOW WE HAVE THE PHOTO -> ADD MARKER HERE
+                                        // ****************************************
+
+                                        // Creates a marker with photo
+                                        this.addPoiMarker(poi, poiPhoto, photoAttribs, unlocked);
+
+                                    // CASE C) Photo request canceled
+                                    }).addOnCanceledListener(() -> {
+                                        // Creates a marker without photo
+                                        this.addPoiMarker(poi, null, photoAttribs, unlocked);
+                                    });
+
+                        // CASE D) Place hasn't got any photos
+                        } else {
+                            this.addPoiMarker(poi, null, null, unlocked);
+                        }
+
                     } else {
-                        Log.e(getString(R.string.google_maps_log),
+                        Log.e(MAPS_LOG_TAG,
                                 "Error fetching POI: " + request.getPlaceId());
                     }
 
                 // CASE B) Task failed with an exception
                 } else {
-                    Exception exception = task.getException();
+                    Exception exception = placeTask.getException();
 
                     if (exception != null) {
                         exception.printStackTrace();
                     } else {
-                        Log.e(getString(R.string.google_maps_log),
+                        Log.e(MAPS_LOG_TAG,
                                 "POI not found: " + request.getPlaceId());
                     }
                 }
@@ -528,38 +627,124 @@ public class MapsActivity extends FragmentActivity
     }
 
     /** Add a marker in the given Place */
-    private void setMarker(Place place, boolean unlocked) {
+    private void addPoiMarker(Place place, @Nullable Bitmap photo, @Nullable String photoAttribs, boolean unlocked) {
+//        Log.v(getString(R.string.google_maps_log),
+//                "---------------------------------------");
+//        Log.v(getString(R.string.google_maps_log),
+//                "Place: " + place.getName());
+//        Log.v(getString(R.string.google_maps_log),
+//                "Place attribs: " + place.getAttributions());
+//        Log.v(getString(R.string.google_maps_log),
+//                "Photo: " + photo);
+//        Log.v(getString(R.string.google_maps_log),
+//                "Photo attribs: " + photoAttribs);
+//        Log.v(getString(R.string.google_maps_log),
+//                "Unlocked: " + unlocked);
+
         // LatLng is the only essential property for a marker -> can't be null
         if (place.getLatLng() != null) {
             MarkerOptions markerOptions = new MarkerOptions()
-                    .position(place.getLatLng())
-                    .title(place.getName());        // Title is never null
+                    .position(place.getLatLng());   // Only essential property
 
+            // Beautify the type list contents
             List<Place.Type> placeTypes = place.getTypes();
+            String snippet = "Unknown Place Type";  // PLACEHOLDER
 
-            if (placeTypes != null) {
-                StringBuilder typesSnippet = new StringBuilder();
+            if (placeTypes != null && !placeTypes.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
 
                 for (Place.Type type: placeTypes) {
-                    typesSnippet.append(type.toString());
+                    sb.append(type.toString());
 
                     if (placeTypes.lastIndexOf(type) != placeTypes.size() - 1) {
-                        typesSnippet.append(" | ");
+                        sb.append(" | ");
                     }
                 }
 
-                markerOptions.snippet(typesSnippet.toString());
+                snippet = sb.toString();
             }
 
+            // Title -> Name is never null
+            markerOptions.title(place.getName());
+            markerOptions.snippet(snippet);
+
+            // Show in blue those POIs that user has already unlocked
             if (unlocked) {
                 markerOptions.icon(BitmapDescriptorFactory
                         .defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
             }
 
-            mMap.addMarker(markerOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
+            // Add marker to the map
+            Marker marker = mMap.addMarker(markerOptions);
+
+            // -----------------------------------------------------------
+
+            // PROBLEM: Neither Marker nor MarkerOpts contain fields
+            // to store the Places photo and attributions
+
+            // ATTRIBS -> Store them in a map and pass it as Marker's 'tag'
+            // *** Ideal Attrib. -> TASL (Title, Author, Source, License) ***
+            Map<String, String> attributions = new HashMap<>();
+
+            String placeAttribsHtml = "<b>© Place: </b>";
+            String photoAttribsHtml = "<b>© Photo: </b>";
+            String licenseHtml = "<b>© License: </b>";
+
+            // 1. Building place attributions HTML string
+            StringBuilder sb = new StringBuilder(placeAttribsHtml);
+            List<String> placeAttribs = place.getAttributions();
+
+            if (placeAttribs != null && !placeAttribs.isEmpty()) {
+                for (String attrib : placeAttribs) {
+                    sb.append(attrib);
+
+                    if (placeAttribs.lastIndexOf(attrib)
+                            != placeAttribs.size() - 1) {
+                        sb.append("<span> | </span>");
+                    }
+                }
+            } else {
+                sb.append("<span>Unknown</span>");
+            }
+
+            placeAttribsHtml = sb.toString();
+            sb.setLength(0);    // Clears the buffer
+
+            // 2. Building photo attributions HTML string
+            sb.append(photoAttribsHtml);
+
+            if (photoAttribs != null) {
+                sb.append(photoAttribs);
+            } else {
+                sb.append("<span>Unknown</span>");
+            }
+
+            photoAttribsHtml = sb.toString();
+            sb.setLength(0);    // Clears the buffer
+
+            // 3. Building license HTML string
+            sb.append(licenseHtml);
+
+            // TODO: Any way to find out the real license?
+            sb.append(getString(R.string.cc_attrib_license_html));
+
+            licenseHtml = sb.toString();
+            sb.setLength(0);    // Clears the buffer
+
+            // Add all attributions to the HashMap
+            attributions.put("place", placeAttribsHtml);
+            attributions.put("photo", photoAttribsHtml);
+            attributions.put("license", licenseHtml);
+
+            marker.setTag(attributions);
+
+            // PHOTOS -> Bind them with the marker in a member map,
+            //      so we can retrieve it in the InfoWindowAdapter
+            if (photo != null) {
+                mMarkersWithPhoto.put(marker, photo);
+            }
         } else {
-            Log.i(getString(R.string.google_maps_log),
+            Log.e(MAPS_LOG_TAG,
                     String.format("Error adding marker in '%s': No LatLng found",
                             place.getName()));
         }
@@ -643,22 +828,168 @@ public class MapsActivity extends FragmentActivity
                 .show();
     }
 
-    private void centerOnMyLocation() {
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getSupportFragmentManager().findFragmentById(R.id.map);
+    private boolean checkMapReady() {
+        boolean mapReady = true;
 
-        // Obtain the View from the MapFragment
-        if (mapFragment != null) {
-            View mapView = mapFragment.getView();
+        if (mMap == null) {
+            Toast.makeText(this,
+                    "Map is not ready yet", Toast.LENGTH_SHORT).show();
+            mapReady = false;
+        }
 
-            // Programmatically click on the "My Location" blue button
-            if (mapView != null) {
-                // 0x2 -> ID found using the Layout Inspector
-                mapView.findViewById(0x2).performClick();
+        return mapReady;
+    }
 
-                Log.v(getString(R.string.google_maps_log),
-                        "Centered map in the user location");
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        if (marker.isInfoWindowShown()) {
+            marker.hideInfoWindow();
+        }
+
+        mLastSelectedMarker = marker;
+
+        // We return false to indicate that we have not consumed the event
+        // and that we wish for the default behavior to occur
+        // (which is for the camera to move such that the marker is centered
+        // and for the marker's info window to open, if it has one).
+        return false;
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        // The info window will not respect any of the interactivity typical
+        // for a normal view such as touch or gesture events. However,
+        // you can listen to a generic click event on the whole info window.
+
+        // ACTION -> Navigate to the photo attribution link
+
+        // Retrieve the attributions from the 'tag' property
+        @SuppressWarnings("unchecked")
+        Map<String, String> attributions = (Map<String, String>) marker.getTag();
+
+        if (attributions != null) {
+            // Get the raw HTML string from the HashMap
+            String photoAttribs = attributions.get("photo");
+
+            // Extract the links from the text
+            List<String> links = this.extractLinks(photoAttribs);
+
+            if (links != null && !links.isEmpty()) {
+                Uri photoAttribUri = Uri.parse(links.get(0));
+
+                // Launch a intent to browse the link
+                Intent intent = new Intent(Intent.ACTION_VIEW, photoAttribUri);
+                this.startActivity(intent);
             }
+        }
+    }
+
+    private CharSequence parseHtml(CharSequence snippet) {
+        if (snippet != null) {
+            snippet = HtmlCompat.fromHtml(
+                    snippet.toString(),
+                    HtmlCompat.FROM_HTML_MODE_COMPACT
+            );
+        }
+
+        return snippet;
+    }
+
+    private List<String> extractLinks(String text) {
+        List<String> links = new ArrayList<>();
+
+        Matcher matcher = Patterns.WEB_URL.matcher(text);
+
+        while (matcher.find()) {
+            String url = matcher.group();
+            Log.d(MAPS_LOG_TAG, "URL extracted: " + url);
+            links.add(url);
+        }
+
+        return links;
+    }
+
+
+    /** Demonstrates customizing the info window and/or its contents. */
+    class PoiInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+
+        // These are both ViewGroups containing an ImageView with id "imgPhoto"
+        // and two TextViews with ids "txtName" and "txtTypes".
+//        private final View mWindow;
+        private final View mContents;
+
+        PoiInfoWindowAdapter() {
+//            mWindow = getLayoutInflater()
+//                    .inflate(R.layout.photo_info_window,
+//                            findViewById(R.id.map), false);
+            mContents = getLayoutInflater()
+                    .inflate(R.layout.photo_info_window,
+                            findViewById(R.id.map), false);
+        }
+
+        // Provide a view that will be used for the entire info window.
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;    // This means that getInfoContents will be called.
+        }
+
+        // Just customize the contents of the window but still
+        // keep the default info window frame and background.
+        @Override
+        public View getInfoContents(Marker marker) {
+            // Update the View with the POI properties
+            this.render(marker, mContents);
+
+            return mContents;
+        }
+
+        private void render(Marker marker, View infoContents) {
+            ImageView imgPhoto = infoContents.findViewById(R.id.imgPhoto);
+            TextView txtName = infoContents.findViewById(R.id.txtName);
+            TextView txtTypes = infoContents.findViewById(R.id.txtTypes);
+
+            TextView txtPlaceAttribs = infoContents.findViewById(R.id.txtPlaceAttribs);
+            TextView txtPhotoAttribs = infoContents.findViewById(R.id.txtPhotoAttribs);
+            TextView txtLicense = infoContents.findViewById(R.id.txtLicense);
+
+            // Retrieve the photo from our custom map
+            Bitmap poiPhoto = mMarkersWithPhoto.get(marker);
+
+            // Retrieve the attributions from the 'tag' property
+            @SuppressWarnings("unchecked")
+            Map<String, String> attributions = (Map<String, String>) marker.getTag();
+
+            imgPhoto.setImageBitmap(poiPhoto);
+            txtName.setText(marker.getTitle());
+            txtTypes.setText(marker.getSnippet());
+
+            if (attributions != null) {
+                // Get the raw HTML string from the HashMap
+                CharSequence placeAttribs = attributions.get("place");
+                CharSequence photoAttribs = attributions.get("photo");
+                CharSequence license = attributions.get("license");
+
+                // Parse the HTML code for the TextViews
+                placeAttribs = parseHtml(placeAttribs);
+                photoAttribs = parseHtml(photoAttribs);
+                license = parseHtml(license);
+
+                // Update the TextViews' content
+                txtPlaceAttribs.setText(placeAttribs);
+                txtPhotoAttribs.setText(photoAttribs);
+                txtLicense.setText(license);
+            }
+
+            if (poiPhoto == null) {
+                imgPhoto.setVisibility(View.GONE);
+                txtPhotoAttribs.setVisibility(View.GONE);
+            } else {
+                imgPhoto.setVisibility(View.VISIBLE);
+                txtPhotoAttribs.setVisibility(View.VISIBLE);
+            }
+
+            // Clear the tag to free system memory
+//            marker.setTag(null);
         }
     }
 }

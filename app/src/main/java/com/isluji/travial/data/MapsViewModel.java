@@ -51,6 +51,10 @@ public class MapsViewModel extends AndroidViewModel {
         mProbablePlaces.add(probablePlace);
     }
 
+    public Place getMostProbableCurrentPlace() {
+        return mProbablePlaces.iterator().next();
+    }
+
     // Returns the most probable current POI
     // and null if the user isn't located in a POI
     public Place getCurrentPoi() {

@@ -7,11 +7,12 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.isluji.travial.model.Trivia;
-import com.isluji.travial.model.TriviaAnswer;
-import com.isluji.travial.model.TriviaQuestion;
-import com.isluji.travial.model.TriviaResult;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.trivias.Answer;
+import com.isluji.travial.model.trivias.QuestionWithAnswers;
+import com.isluji.travial.model.trivias.Result;
+import com.isluji.travial.model.trivias.Trivia;
+import com.isluji.travial.model.trivias.Question;
+import com.isluji.travial.model.trivias.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
 import java.util.List;
@@ -29,11 +30,15 @@ public interface AppDao {
     LiveData<List<String>> getAllPoiIds();
 
     @Transaction
-    @Query("SELECT * FROM trivia WHERE poi_id IN (:userPoiIds)")
+    @Query("SELECT * FROM trivia WHERE poi_id IN (:userPoiIds) ORDER BY id ASC")
     LiveData<List<TriviaWithQuestions>> getUserTrivias(Set<String> userPoiIds);
 
-    @Query("SELECT * FROM trivia_result WHERE user_email = :userEmail ORDER BY id ASC")
-    LiveData<List<TriviaResult>> getUserResults(String userEmail);
+    @Transaction
+    @Query("SELECT * FROM question WHERE trivia_id = :triviaId ORDER BY id ASC")
+    LiveData<List<QuestionWithAnswers>> getTriviaQuestions(int triviaId);
+
+    @Query("SELECT * FROM Result WHERE user_email = :userEmail ORDER BY id ASC")
+    LiveData<List<Result>> getUserResults(String userEmail);
 
     @Query("SELECT * FROM user WHERE email = :email")
     User findUserByEmail(String email);
@@ -47,13 +52,13 @@ public interface AppDao {
     long insertTrivia(Trivia trivia);
 
     @Insert
-    long insertResult(TriviaResult result);
+    long insertResult(Result result);
 
     @Insert
-    long[] insertQuestions(TriviaQuestion... questions);
+    long[] insertQuestions(Question... questions);
 
     @Insert
-    long[] insertAnswers(TriviaAnswer... answers);
+    long[] insertAnswers(Answer... answers);
 
     // --------------- UPDATES ---------------
 
@@ -68,12 +73,12 @@ public interface AppDao {
     @Query("DELETE FROM trivia")
     void deleteAllTrivias();
 
-    @Query("DELETE FROM trivia_question")
+    @Query("DELETE FROM Question")
     void deleteAllQuestions();
 
-    @Query("DELETE FROM trivia_answer")
+    @Query("DELETE FROM Answer")
     void deleteAllAnswers();
 
-    @Query("DELETE FROM trivia_result")
+    @Query("DELETE FROM Result")
     void deleteAllResults();
 }

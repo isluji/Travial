@@ -5,10 +5,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.isluji.travial.R;
-import com.isluji.travial.model.TriviaAnswer;
-import com.isluji.travial.model.TriviaQuestionWithAnswers;
-import com.isluji.travial.model.TriviaResult;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.trivias.Answer;
+import com.isluji.travial.model.trivias.QuestionWithAnswers;
+import com.isluji.travial.model.trivias.Result;
+import com.isluji.travial.model.trivias.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
 import java.util.List;
@@ -29,16 +29,14 @@ public class TriviaViewModel extends AndroidViewModel {
 
     private int mSelectedTriviaPosition;
 
-    private LiveData<List<TriviaWithQuestions>> mUserTrivias;
-    private LiveData<List<TriviaResult>> mUserResults;
+    /*public final*/ LiveData<List<TriviaWithQuestions>> mUserTrivias;
+//    public final LiveData<List<QuestionWithAnswers>> mQuestionsList;
+//    public final LiveData<List<Result>> mUserResults;
 
     public TriviaViewModel(Application app) {
         super(app);
 
         mRepository = new TriviaRepository(app);
-
-//        mUserTrivias = this.getUserTrivias();
-//        mUserResults = this.getUserResults();
 
         mSelectedTriviaPosition = 0;
     }
@@ -59,11 +57,11 @@ public class TriviaViewModel extends AndroidViewModel {
         return mRepository.getUserTrivias(userPoiIds);
     }
 
-    public LiveData<List<TriviaResult>> getUserResults(String userEmail) {
+    public LiveData<List<Result>> getUserResults(String userEmail) {
         return mRepository.getUserResults(userEmail);
     }
 
-    public long insertResult(TriviaResult newResult)
+    public long insertResult(Result newResult)
             throws ExecutionException, InterruptedException {
         return mRepository.insertResult(newResult);
     }
@@ -86,13 +84,13 @@ public class TriviaViewModel extends AndroidViewModel {
         return twq;
     }
 
-    public TriviaResult evaluateSelectedTrivia() {
+    public Result evaluateSelectedTrivia() {
         TriviaWithQuestions twq = this.getSelectedTrivia();
         double score = 0;
 
         // Calculate the score of all the questions
-        for (TriviaQuestionWithAnswers qwa: twq.getQuestions()) {
-            for (TriviaAnswer answer: qwa.getAnswers()) {
+        for (QuestionWithAnswers qwa: twq.getQuestions()) {
+            for (Answer answer: qwa.getAnswers()) {
                 if (answer.isSelected() && answer.isCorrect()) {
                     score += qwa.getQuestion().getScore();
                 }
@@ -107,6 +105,6 @@ public class TriviaViewModel extends AndroidViewModel {
         String userEmail = sharedPrefs.getString("user_email",
                 this.getApplication().getString(R.string.placeholder_user_email));
 
-        return new TriviaResult(twq.getId(), userEmail, score);
+        return new Result(twq.getId(), userEmail, score);
     }
 }

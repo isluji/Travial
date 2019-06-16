@@ -13,15 +13,15 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.isluji.travial.R;
 import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.misc.Converters;
-import com.isluji.travial.model.Trivia;
-import com.isluji.travial.model.TriviaAnswer;
-import com.isluji.travial.model.TriviaQuestion;
-import com.isluji.travial.model.TriviaResult;
+import com.isluji.travial.model.trivias.Answer;
+import com.isluji.travial.model.trivias.Question;
+import com.isluji.travial.model.trivias.Trivia;
+import com.isluji.travial.model.trivias.Result;
 import com.isluji.travial.model.User;
 
 // We need to declare all the entities here
-@Database(entities = {User.class, Trivia.class, TriviaQuestion.class,
-        TriviaAnswer.class, TriviaResult.class}, version = 7)
+@Database(entities = {User.class, Trivia.class, Question.class,
+        Answer.class, Result.class}, version = 7)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -129,9 +129,9 @@ public abstract class AppDatabase extends RoomDatabase {
             Trivia trivia = new Trivia("Historia de la Fuente del Rey", TriviaDifficulty.EASY, 5, "ChIJ0Y-F5lWQbQ0R-DLx-r_U8mI");
             trivia.setId(Long.valueOf(mDao.insertTrivia(trivia)).intValue());
 
-            TriviaQuestion q1 = new TriviaQuestion("¿Quién fue su autor?", 3.33, trivia.getId());
-            TriviaQuestion q2 = new TriviaQuestion("¿En qué año fue construida?", 3.33, trivia.getId());
-            TriviaQuestion q3 = new TriviaQuestion("¿Cuál es su estilo arquitectónico?", 3.33, trivia.getId());
+            Question q1 = new Question("¿Quién fue su autor?", 3.33, trivia.getId());
+            Question q2 = new Question("¿En qué año fue construida?", 3.33, trivia.getId());
+            Question q3 = new Question("¿Cuál es su estilo arquitectónico?", 3.33, trivia.getId());
 
             // Repeat process with each Question and its Answers
             long[] questionIds = mDao.insertQuestions(q1, q2, q3);
@@ -139,17 +139,17 @@ public abstract class AppDatabase extends RoomDatabase {
             q2.setId(Long.valueOf(questionIds[1]).intValue());
             q3.setId(Long.valueOf(questionIds[2]).intValue());
 
-            TriviaAnswer a1_1 = new TriviaAnswer("José Álvarez Cubero", false, q1.getId());
-            TriviaAnswer a1_2 = new TriviaAnswer("Remigio del Mármol", true, q1.getId());
-            TriviaAnswer a1_3 = new TriviaAnswer("Adolfo Lozano Sidro", false, q1.getId());
+            Answer a1_1 = new Answer("José Álvarez Cubero", false, q1.getId());
+            Answer a1_2 = new Answer("Remigio del Mármol", true, q1.getId());
+            Answer a1_3 = new Answer("Adolfo Lozano Sidro", false, q1.getId());
 
-            TriviaAnswer a2_1 = new TriviaAnswer("1803", true, q2.getId());
-            TriviaAnswer a2_2 = new TriviaAnswer("1805", false, q2.getId());
-            TriviaAnswer a2_3 = new TriviaAnswer("1823", false, q2.getId());
+            Answer a2_1 = new Answer("1803", true, q2.getId());
+            Answer a2_2 = new Answer("1805", false, q2.getId());
+            Answer a2_3 = new Answer("1823", false, q2.getId());
 
-            TriviaAnswer a3_1 = new TriviaAnswer("Románico", false, q3.getId());
-            TriviaAnswer a3_2 = new TriviaAnswer("Renacentista", false, q3.getId());
-            TriviaAnswer a3_3 = new TriviaAnswer("Barroco", true, q3.getId());
+            Answer a3_1 = new Answer("Románico", false, q3.getId());
+            Answer a3_2 = new Answer("Renacentista", false, q3.getId());
+            Answer a3_3 = new Answer("Barroco", true, q3.getId());
 
             mDao.insertAnswers( a1_1, a1_2, a1_3,
                                 a2_1, a2_2, a2_3,
@@ -163,9 +163,9 @@ public abstract class AppDatabase extends RoomDatabase {
             Trivia trivia = new Trivia("Historia del Cementerio", TriviaDifficulty.MEDIUM, 5, "ChIJQxHtE_qQbQ0RAPCmX1wLTEI");
             trivia.setId(Long.valueOf(mDao.insertTrivia(trivia)).intValue());
 
-            TriviaQuestion q1 = new TriviaQuestion("¿Qué alcalde de Priego inauguró el Cementerio?", 3.33, trivia.getId());
-            TriviaQuestion q2 = new TriviaQuestion("¿Qué hermandad dispone de un panteón particular?", 3.33, trivia.getId());
-            TriviaQuestion q3 = new TriviaQuestion("¿En qué año fue inaugurado?", 3.33, trivia.getId());
+            Question q1 = new Question("¿Qué alcalde de Priego inauguró el Cementerio?", 3.33, trivia.getId());
+            Question q2 = new Question("¿Qué hermandad dispone de un panteón particular?", 3.33, trivia.getId());
+            Question q3 = new Question("¿En qué año fue inaugurado?", 3.33, trivia.getId());
 
             // Repeat process with each Question and its Answers
             long[] questionIds = mDao.insertQuestions(q1, q2, q3);
@@ -173,17 +173,17 @@ public abstract class AppDatabase extends RoomDatabase {
             q2.setId(Long.valueOf(questionIds[1]).intValue());
             q3.setId(Long.valueOf(questionIds[2]).intValue());
 
-            TriviaAnswer a1_1 = new TriviaAnswer("Tomás Delgado Toro", false, q1.getId());
-            TriviaAnswer a1_2 = new TriviaAnswer("Antonio de la Barrera", true, q1.getId());
-            TriviaAnswer a1_3 = new TriviaAnswer("José Tomás Valverde", false, q1.getId());
+            Answer a1_1 = new Answer("Tomás Delgado Toro", false, q1.getId());
+            Answer a1_2 = new Answer("Antonio de la Barrera", true, q1.getId());
+            Answer a1_3 = new Answer("José Tomás Valverde", false, q1.getId());
 
-            TriviaAnswer a2_1 = new TriviaAnswer("Hermandad de la Caridad", true, q2.getId());
-            TriviaAnswer a2_2 = new TriviaAnswer("Hermandad de la Soledad", false, q2.getId());
-            TriviaAnswer a2_3 = new TriviaAnswer("Hermandad de Ntro. Padre Jesús Nazareno", false, q2.getId());
+            Answer a2_1 = new Answer("Hermandad de la Caridad", true, q2.getId());
+            Answer a2_2 = new Answer("Hermandad de la Soledad", false, q2.getId());
+            Answer a2_3 = new Answer("Hermandad de Ntro. Padre Jesús Nazareno", false, q2.getId());
 
-            TriviaAnswer a3_1 = new TriviaAnswer("1927", false, q3.getId());
-            TriviaAnswer a3_2 = new TriviaAnswer("1891", false, q3.getId());
-            TriviaAnswer a3_3 = new TriviaAnswer("1869", true, q3.getId());
+            Answer a3_1 = new Answer("1927", false, q3.getId());
+            Answer a3_2 = new Answer("1891", false, q3.getId());
+            Answer a3_3 = new Answer("1869", true, q3.getId());
 
             mDao.insertAnswers( a1_1, a1_2, a1_3,
                                 a2_1, a2_2, a2_3,
@@ -197,9 +197,9 @@ public abstract class AppDatabase extends RoomDatabase {
             Trivia trivia = new Trivia("Torre del Homenaje", TriviaDifficulty.MEDIUM, 5, "ChIJWVifLv6QbQ0R_R0Gcgbroys");
             trivia.setId(Long.valueOf(mDao.insertTrivia(trivia)).intValue());
 
-            TriviaQuestion q1 = new TriviaQuestion("¿Qué otro nombre recibe esta torre?", 3.33, trivia.getId());
-            TriviaQuestion q2 = new TriviaQuestion("¿Desde qué año es Monumento Histórico-Artístico Nacional?", 3.33, trivia.getId());
-            TriviaQuestion q3 = new TriviaQuestion("¿Qué altura posee esta torre?", 3.33, trivia.getId());
+            Question q1 = new Question("¿Qué otro nombre recibe esta torre?", 3.33, trivia.getId());
+            Question q2 = new Question("¿Desde qué año es Monumento Histórico-Artístico Nacional?", 3.33, trivia.getId());
+            Question q3 = new Question("¿Qué altura posee esta torre?", 3.33, trivia.getId());
 
             // Repeat process with each Question and its Answers
             long[] questionIds = mDao.insertQuestions(q1, q2, q3);
@@ -207,17 +207,17 @@ public abstract class AppDatabase extends RoomDatabase {
             q2.setId(Long.valueOf(questionIds[1]).intValue());
             q3.setId(Long.valueOf(questionIds[2]).intValue());
 
-            TriviaAnswer a1_1 = new TriviaAnswer("Torre Alta", false, q1.getId());
-            TriviaAnswer a1_2 = new TriviaAnswer("Torre Gorda", true, q1.getId());
-            TriviaAnswer a1_3 = new TriviaAnswer("Torre de Priego", false, q1.getId());
+            Answer a1_1 = new Answer("Torre Alta", false, q1.getId());
+            Answer a1_2 = new Answer("Torre Gorda", true, q1.getId());
+            Answer a1_3 = new Answer("Torre de Priego", false, q1.getId());
 
-            TriviaAnswer a2_1 = new TriviaAnswer("1978", false, q2.getId());
-            TriviaAnswer a2_2 = new TriviaAnswer("1943", true, q2.getId());
-            TriviaAnswer a2_3 = new TriviaAnswer("1954", false, q2.getId());
+            Answer a2_1 = new Answer("1978", false, q2.getId());
+            Answer a2_2 = new Answer("1943", true, q2.getId());
+            Answer a2_3 = new Answer("1954", false, q2.getId());
 
-            TriviaAnswer a3_1 = new TriviaAnswer("30 metros", true, q3.getId());
-            TriviaAnswer a3_2 = new TriviaAnswer("24 metros", false, q3.getId());
-            TriviaAnswer a3_3 = new TriviaAnswer("20 metros", false, q3.getId());
+            Answer a3_1 = new Answer("30 metros", true, q3.getId());
+            Answer a3_2 = new Answer("24 metros", false, q3.getId());
+            Answer a3_3 = new Answer("20 metros", false, q3.getId());
 
             mDao.insertAnswers( a1_1, a1_2, a1_3,
                                 a2_1, a2_2, a2_3,
@@ -232,9 +232,9 @@ public abstract class AppDatabase extends RoomDatabase {
             Trivia trivia = new Trivia(title, TriviaDifficulty.EASY, 5, placeId);
             trivia.setId(Long.valueOf(mDao.insertTrivia(trivia)).intValue());
 
-            TriviaQuestion q1 = new TriviaQuestion("Pregunta de prueba 1", 3.33, trivia.getId());
-            TriviaQuestion q2 = new TriviaQuestion("Pregunta de prueba 2", 3.33, trivia.getId());
-            TriviaQuestion q3 = new TriviaQuestion("Pregunta de prueba 3", 3.33, trivia.getId());
+            Question q1 = new Question("Pregunta de prueba 1", 3.33, trivia.getId());
+            Question q2 = new Question("Pregunta de prueba 2", 3.33, trivia.getId());
+            Question q3 = new Question("Pregunta de prueba 3", 3.33, trivia.getId());
 
             // Repeat process with each Question and its Answers
             long[] questionIds = mDao.insertQuestions(q1, q2, q3);
@@ -242,17 +242,17 @@ public abstract class AppDatabase extends RoomDatabase {
             q2.setId(Long.valueOf(questionIds[1]).intValue());
             q3.setId(Long.valueOf(questionIds[2]).intValue());
 
-            TriviaAnswer a1_1 = new TriviaAnswer("Respuesta 1", false, q1.getId());
-            TriviaAnswer a1_2 = new TriviaAnswer("Respuesta 2 (correcta)", true, q1.getId());
-            TriviaAnswer a1_3 = new TriviaAnswer("Respuesta 3", false, q1.getId());
+            Answer a1_1 = new Answer("Respuesta 1", false, q1.getId());
+            Answer a1_2 = new Answer("Respuesta 2 (correcta)", true, q1.getId());
+            Answer a1_3 = new Answer("Respuesta 3", false, q1.getId());
 
-            TriviaAnswer a2_1 = new TriviaAnswer("Respuesta 1", false, q2.getId());
-            TriviaAnswer a2_2 = new TriviaAnswer("Respuesta 2", false, q2.getId());
-            TriviaAnswer a2_3 = new TriviaAnswer("Respuesta 3 (correcta)", true, q2.getId());
+            Answer a2_1 = new Answer("Respuesta 1", false, q2.getId());
+            Answer a2_2 = new Answer("Respuesta 2", false, q2.getId());
+            Answer a2_3 = new Answer("Respuesta 3 (correcta)", true, q2.getId());
 
-            TriviaAnswer a3_1 = new TriviaAnswer("Respuesta 1 (correcta)", true, q3.getId());
-            TriviaAnswer a3_2 = new TriviaAnswer("Respuesta 2", false, q3.getId());
-            TriviaAnswer a3_3 = new TriviaAnswer("Respuesta 3", false, q3.getId());
+            Answer a3_1 = new Answer("Respuesta 1 (correcta)", true, q3.getId());
+            Answer a3_2 = new Answer("Respuesta 2", false, q3.getId());
+            Answer a3_3 = new Answer("Respuesta 3", false, q3.getId());
 
             mDao.insertAnswers( a1_1, a1_2, a1_3,
                                 a2_1, a2_2, a2_3,

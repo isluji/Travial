@@ -18,29 +18,24 @@ package com.isluji.travial;
 
 import androidx.room.Room;
 import android.content.Context;
-import android.util.Log;
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.google.gson.Gson;
 import com.isluji.travial.data.AppDao;
 import com.isluji.travial.data.AppDatabase;
 import com.isluji.travial.enums.PoiType;
 import com.isluji.travial.enums.TriviaDifficulty;
 import com.isluji.travial.model.PointOfInterest;
-import com.isluji.travial.model.Trivia;
+import com.isluji.travial.model.trivias.Trivia;
 import com.isluji.travial.model.User;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;

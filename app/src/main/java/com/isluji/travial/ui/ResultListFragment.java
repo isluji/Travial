@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.ResultListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.model.TriviaResult;
+import com.isluji.travial.model.trivias.Result;
 
 import java.util.List;
 import java.util.Objects;
@@ -88,9 +88,9 @@ public class ResultListFragment extends Fragment {
             // Add an observer on the LiveData returned by getAllTrivias.
             // The onChanged() method fires when the observed data changes
             // and the activity is in the foreground.
-            mViewModel.getUserResults(userEmail).observe(this, new Observer<List<TriviaResult>>() {
+            mViewModel.getUserResults(userEmail).observe(this, new Observer<List<Result>>() {
                 @Override
-                public void onChanged(@Nullable final List<TriviaResult> userResults) {
+                public void onChanged(@Nullable final List<Result> userResults) {
                     // Update the cached copy of the trivias in the adapter.
                     adapter.setResults(userResults);
                 }
@@ -132,6 +132,6 @@ public class ResultListFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(TriviaResult item);
+        void onListFragmentInteraction(Result item);
     }
 }

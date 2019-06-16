@@ -1,4 +1,4 @@
-package com.isluji.travial.model;
+package com.isluji.travial.model.trivias;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -6,14 +6,15 @@ import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
+import com.isluji.travial.model.User;
+
 import org.threeten.bp.OffsetDateTime;
 
-@Entity(tableName = "trivia_result", foreignKeys =
-        {@ForeignKey(entity = Trivia.class,
+@Entity(foreignKeys = {@ForeignKey(entity = Trivia.class,
             parentColumns = "id", childColumns = "trivia_id"),
         @ForeignKey(entity = User.class,
             parentColumns = "email", childColumns = "user_email")})
-public class TriviaResult {
+public class Result {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -32,7 +33,7 @@ public class TriviaResult {
     private OffsetDateTime finishedDate;
 
 
-    public TriviaResult(int triviaId, String userEmail, double score) {
+    public Result(int triviaId, String userEmail, double score) {
         this.triviaId = triviaId;
         this.userEmail = userEmail;
         this.score = score;
@@ -53,10 +54,6 @@ public class TriviaResult {
 
     public int getTriviaId() {
         return triviaId;
-    }
-
-    public void setTriviaId(int triviaId) {
-        this.triviaId = triviaId;
     }
 
     public String getUserEmail() {

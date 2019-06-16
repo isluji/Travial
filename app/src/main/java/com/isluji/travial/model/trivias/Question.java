@@ -1,18 +1,14 @@
-package com.isluji.travial.model;
-
-import java.util.List;
+package com.isluji.travial.model.trivias;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
-import androidx.room.Relation;
 
-@Entity(tableName = "trivia_question",
-        foreignKeys = @ForeignKey(entity = Trivia.class,
+@Entity(foreignKeys = @ForeignKey(entity = Trivia.class,
             parentColumns = "id", childColumns = "trivia_id"))
-public class TriviaQuestion {
+public class Question {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -27,7 +23,7 @@ public class TriviaQuestion {
     private int triviaId;
 
 
-    public TriviaQuestion(@NonNull String statement, double score, int triviaId) {
+    public Question(@NonNull String statement, double score, int triviaId) {
         this.statement = statement;
         this.score = score;
         this.triviaId = triviaId;
@@ -63,9 +59,5 @@ public class TriviaQuestion {
 
     public int getTriviaId() {
         return triviaId;
-    }
-
-    public void setTriviaId(int triviaId) {
-        this.triviaId = triviaId;
     }
 }

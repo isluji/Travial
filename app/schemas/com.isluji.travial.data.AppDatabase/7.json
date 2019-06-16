@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "e8f8aed9eb0c5ba01bfa0e6aaf10ef24",
+    "identityHash": "2b47eb1d749c838694f91889bff737cf",
     "entities": [
       {
         "tableName": "User",
@@ -111,7 +111,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "trivia_question",
+        "tableName": "Question",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `statement` TEXT NOT NULL, `score` REAL NOT NULL, `trivia_id` INTEGER NOT NULL, FOREIGN KEY(`trivia_id`) REFERENCES `Trivia`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
@@ -147,12 +147,12 @@
         },
         "indices": [
           {
-            "name": "index_trivia_question_trivia_id",
+            "name": "index_Question_trivia_id",
             "unique": false,
             "columnNames": [
               "trivia_id"
             ],
-            "createSql": "CREATE  INDEX `index_trivia_question_trivia_id` ON `${TABLE_NAME}` (`trivia_id`)"
+            "createSql": "CREATE  INDEX `index_Question_trivia_id` ON `${TABLE_NAME}` (`trivia_id`)"
           }
         ],
         "foreignKeys": [
@@ -170,8 +170,8 @@
         ]
       },
       {
-        "tableName": "trivia_answer",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `text` TEXT NOT NULL, `correct` INTEGER NOT NULL, `question_id` INTEGER NOT NULL, FOREIGN KEY(`question_id`) REFERENCES `trivia_question`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "tableName": "Answer",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `text` TEXT NOT NULL, `correct` INTEGER NOT NULL, `question_id` INTEGER NOT NULL, FOREIGN KEY(`question_id`) REFERENCES `Question`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -206,17 +206,17 @@
         },
         "indices": [
           {
-            "name": "index_trivia_answer_question_id",
+            "name": "index_Answer_question_id",
             "unique": false,
             "columnNames": [
               "question_id"
             ],
-            "createSql": "CREATE  INDEX `index_trivia_answer_question_id` ON `${TABLE_NAME}` (`question_id`)"
+            "createSql": "CREATE  INDEX `index_Answer_question_id` ON `${TABLE_NAME}` (`question_id`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "trivia_question",
+            "table": "Question",
             "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
@@ -229,7 +229,7 @@
         ]
       },
       {
-        "tableName": "trivia_result",
+        "tableName": "Result",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `trivia_id` INTEGER NOT NULL, `user_email` TEXT, `score` REAL NOT NULL, `finishedDate` TEXT NOT NULL, FOREIGN KEY(`trivia_id`) REFERENCES `Trivia`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`user_email`) REFERENCES `User`(`email`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
@@ -271,20 +271,20 @@
         },
         "indices": [
           {
-            "name": "index_trivia_result_trivia_id",
+            "name": "index_Result_trivia_id",
             "unique": false,
             "columnNames": [
               "trivia_id"
             ],
-            "createSql": "CREATE  INDEX `index_trivia_result_trivia_id` ON `${TABLE_NAME}` (`trivia_id`)"
+            "createSql": "CREATE  INDEX `index_Result_trivia_id` ON `${TABLE_NAME}` (`trivia_id`)"
           },
           {
-            "name": "index_trivia_result_user_email",
+            "name": "index_Result_user_email",
             "unique": false,
             "columnNames": [
               "user_email"
             ],
-            "createSql": "CREATE  INDEX `index_trivia_result_user_email` ON `${TABLE_NAME}` (`user_email`)"
+            "createSql": "CREATE  INDEX `index_Result_user_email` ON `${TABLE_NAME}` (`user_email`)"
           }
         ],
         "foreignKeys": [
@@ -315,7 +315,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"e8f8aed9eb0c5ba01bfa0e6aaf10ef24\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2b47eb1d749c838694f91889bff737cf\")"
     ]
   }
 }

@@ -123,6 +123,14 @@
     <string name="trivia_result_failed">FAILED</string>
     <string name="trivia_result_back_btn_text">Back to trivias</string>
     <string name="trivia_result_list_btn_text">List of results</string>
+    
+    <string name="cc_attrib_license_html">
+        <![CDATA[
+            <a href="https://creativecommons.org/licenses/by/4.0">
+                Creative Commons Attribution 4.0 License
+            </a>
+        ]]>
+    </string>
 
     <!-- Log tags -->
 

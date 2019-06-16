@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +15,10 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.Gson;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaListAdapter;
-import com.isluji.travial.data.MapsViewModel;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.model.TriviaWithQuestions;
+import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -70,7 +67,6 @@ public class TriviaListFragment extends Fragment {
         /* ***** RecyclerView and Adapter code ***** */
 
         if (view instanceof RecyclerView) {
-            // TODO? Si falla, cambiar "context" por "this.getActivity()" en los dos últimos métodos
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
 
@@ -80,7 +76,7 @@ public class TriviaListFragment extends Fragment {
 
             // Get the shared ViewModel between MainActivity and its fragments
             mViewModel = ViewModelProviders
-                    .of(Objects.requireNonNull(this.getActivity())) // TODO?
+                    .of(Objects.requireNonNull(this.getActivity()))
                     .get(TriviaViewModel.class);
 
             SharedPreferences sharedPrefs = PreferenceManager

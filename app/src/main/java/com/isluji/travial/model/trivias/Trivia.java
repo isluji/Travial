@@ -1,4 +1,4 @@
-package com.isluji.travial.model;
+package com.isluji.travial.model.trivias;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
