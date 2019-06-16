@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,13 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.isluji.travial.R;
-import com.isluji.travial.adapters.TriviaAdapter;
+import com.isluji.travial.adapters.QuestionListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.trivias.QuestionWithAnswers;
-import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -65,7 +62,7 @@ public class TriviaFragment extends Fragment {
                     .of(Objects.requireNonNull(this.getActivity()))
                     .get(TriviaViewModel.class);
 
-            TriviaAdapter adapter = new TriviaAdapter();
+            QuestionListAdapter adapter = new QuestionListAdapter();
             final LinearLayoutManager layoutManager =
                     new LinearLayoutManager(mRecyclerView.getContext());
 
@@ -83,9 +80,8 @@ public class TriviaFragment extends Fragment {
             // and the activity is in the foreground.
             mViewModel.getUserTrivias(userPoiIds).observe(this, trivias -> {
                 // Update the cached copy of the selected trivia in the adapter.
-//                adapter.submitList(list);
-                adapter.setSelectedTrivia(
-                        trivias.get(mViewModel.getSelectedTriviaPosition())
+                adapter.setQuestions(
+                        mViewModel.getSelectedTrivia().getQuestions()
                 );
             });
         }
@@ -130,7 +126,7 @@ public class TriviaFragment extends Fragment {
     }
 
     public void resetTrivia() {
-        TriviaAdapter adapter = (TriviaAdapter) mRecyclerView.getAdapter();
+        QuestionListAdapter adapter = (QuestionListAdapter) mRecyclerView.getAdapter();
 
         if (adapter != null) {
             adapter.resetTrivia();

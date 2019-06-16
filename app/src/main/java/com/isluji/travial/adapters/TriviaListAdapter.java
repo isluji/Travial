@@ -24,9 +24,10 @@ import java.util.Objects;
  */
 public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.TriviaViewHolder> {
 
-    private final OnListFragmentInteractionListener mListener;
     private static final int VIEW_TYPE_ITEM = 1;
     private static final int VIEW_TYPE_FOOTER = 2;
+
+    private final OnListFragmentInteractionListener mListener;
 
     // Cached copy of the trivias
     private List<TriviaWithQuestions> mTriviaList;

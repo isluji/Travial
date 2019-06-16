@@ -19,24 +19,31 @@ import com.isluji.travial.ui.TriviaFragment.OnListFragmentInteractionListener;
 import com.isluji.travial.model.trivias.Answer;
 import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * {@link RecyclerView.Adapter} that can display a {@link QuestionWithAnswers} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  */
-public class TriviaAdapter
-        extends ListAdapter<QuestionWithAnswers, TriviaAdapter.QuestionViewHolder> {
+public class QuestionListAdapter
+        extends ListAdapter<QuestionWithAnswers, QuestionListAdapter.QuestionViewHolder> {
 
-//    private final OnListFragmentInteractionListener mListener;
     private static final int VIEW_TYPE_ITEM = 1;
     private static final int VIEW_TYPE_FOOTER = 2;
 
+//    private final OnListFragmentInteractionListener mListener;
+
+    // Cached copy of the questions
+    private List<QuestionWithAnswers> mQuestionList;
     // Cached copy of the selected Trivia with its Questions
     private TriviaWithQuestions mSelectedTrivia;
 
-    public TriviaAdapter() {
+    public QuestionListAdapter() {
         super(DIFF_CALLBACK);
 
-        mSelectedTrivia = new TriviaWithQuestions(null);
+        mQuestionList = Collections.emptyList();
+//        mSelectedTrivia = new TriviaWithQuestions(null);
     }
 
 
@@ -69,7 +76,7 @@ public class TriviaAdapter
         // Only obtain the current question when
         // the list isn't empty and it's not the footer item
         if ( (getItemCount() > 1) && (getItemViewType(position) == VIEW_TYPE_ITEM) ) {
-            holder.mItem = mSelectedTrivia.getQuestions().get(position);
+            holder.mItem = mQuestionList.get(position);
 
             holder.mTxtPosition.setText(
                     String.format("%s.", String.valueOf(position + 1))
@@ -120,9 +127,9 @@ public class TriviaAdapter
     public int getItemCount() {
         int itemCount = 0;
 
-        if (mSelectedTrivia.getQuestions() != null) {
+        if (mQuestionList != null) {
             // We add an extra item to count the footer
-            itemCount = mSelectedTrivia.getQuestions().size() + 1;
+            itemCount = mQuestionList.size() + 1;
         }
 
         return itemCount;
@@ -139,13 +146,13 @@ public class TriviaAdapter
         }
     }
 
-    public void setSelectedTrivia(TriviaWithQuestions twq) {
-        mSelectedTrivia = twq;
+    public void setQuestions(List<QuestionWithAnswers> questions) {
+        mQuestionList = questions;
         this.notifyDataSetChanged();
     }
 
     public void resetTrivia() {
-        for (QuestionWithAnswers qwa: mSelectedTrivia.getQuestions()) {
+        for (QuestionWithAnswers qwa: mQuestionList) {
             Answer selectedAnswer = qwa.getSelectedAnswer();
 
             if (selectedAnswer != null) {

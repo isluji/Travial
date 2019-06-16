@@ -88,13 +88,7 @@ public class MapsActivity extends FragmentActivity
     private PlacesClient mPlacesClient;
     private MapsViewModel mViewModel;
 
-    // Matches each Marker with its place's photo,
-    // so we can distinguish which photo to use in the InfoWindowAdapter
-    private Map<Marker, Bitmap> mMarkersWithPhoto = new HashMap<>();
 
-    // Keeps track of the last selected marker (though it may no longer be selected).
-    // This is useful for refreshing the info window.
-    private Marker mLastSelectedMarker;
 
 
     @Override
@@ -437,7 +431,8 @@ public class MapsActivity extends FragmentActivity
     private void updateCurrentPlace() throws SecurityException {
         // Use fields to define the data types to return.
         List<Place.Field> placeFields = Arrays.asList(
-                Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG);
+                Place.Field.ID, Place.Field.NAME,
+                Place.Field.LAT_LNG/*, Place.Field.VIEWPORT*/);
 
         // Use the builder to create a FindCurrentPlaceRequest.
         FindCurrentPlaceRequest request = FindCurrentPlaceRequest
@@ -500,9 +495,9 @@ public class MapsActivity extends FragmentActivity
     private void addPoiToMap(String placeId) {
         // Specify the fields to return.
         List<Place.Field> placeFields = Arrays.asList(
-                Place.Field.ID, Place.Field.NAME,
-                Place.Field.LAT_LNG, /*Place.Field.VIEWPORT,*/
-                Place.Field.TYPES, Place.Field.PHOTO_METADATAS);
+                Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG,
+                Place.Field.TYPES, Place.Field.WEBSITE_URI,
+                Place.Field.PHOTO_METADATAS);
 
         // Construct a request object, passing the place ID and fields array.
         FetchPlaceRequest request = FetchPlaceRequest
@@ -557,8 +552,8 @@ public class MapsActivity extends FragmentActivity
                             // Create a FetchPhotoRequest.
                             FetchPhotoRequest photoRequest = FetchPhotoRequest
                                     .builder(photoMetadata)
-                                    .setMaxWidth(300) // Optional.
-                                    .setMaxHeight(300) // Optional.
+                                    .setMaxWidth(428) // Optional.
+                                    .setMaxHeight(256) // Optional.
                                     .build();
 
                             mPlacesClient.fetchPhoto(photoRequest)
@@ -628,16 +623,19 @@ public class MapsActivity extends FragmentActivity
 
     /** Add a marker in the given Place */
     private void addPoiMarker(Place place, @Nullable Bitmap photo, @Nullable String photoAttribs, boolean unlocked) {
-//        Log.v(getString(R.string.google_maps_log),
-//                "---------------------------------------");
-//        Log.v(getString(R.string.google_maps_log),
-//                "Place: " + place.getName());
-//        Log.v(getString(R.string.google_maps_log),
-//                "Place attribs: " + place.getAttributions());
+        Log.v(getString(R.string.google_maps_log),
+                "---------------------------------------");
+
+        Log.v(getString(R.string.google_maps_log),
+                "Place: " + place.getName());
+        Log.v(getString(R.string.google_maps_log),
+                "Third-party attribs: " + place.getAttributions());
 //        Log.v(getString(R.string.google_maps_log),
 //                "Photo: " + photo);
 //        Log.v(getString(R.string.google_maps_log),
 //                "Photo attribs: " + photoAttribs);
+        Log.v(getString(R.string.google_maps_log),
+                "Website URI: " + place.getWebsiteUri());
 //        Log.v(getString(R.string.google_maps_log),
 //                "Unlocked: " + unlocked);
 
@@ -648,7 +646,7 @@ public class MapsActivity extends FragmentActivity
 
             // Beautify the type list contents
             List<Place.Type> placeTypes = place.getTypes();
-            String snippet = "Unknown Place Type";  // PLACEHOLDER
+            String snippet = "Unknown Place Types";  // PLACEHOLDER
 
             if (placeTypes != null && !placeTypes.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
@@ -683,14 +681,14 @@ public class MapsActivity extends FragmentActivity
             // to store the Places photo and attributions
 
             // ATTRIBS -> Store them in a map and pass it as Marker's 'tag'
-            // *** Ideal Attrib. -> TASL (Title, Author, Source, License) ***
             Map<String, String> attributions = new HashMap<>();
 
-            String placeAttribsHtml = "<b>© Place: </b>";
-            String photoAttribsHtml = "<b>© Photo: </b>";
-            String licenseHtml = "<b>© License: </b>";
+            // Place attributions -> third-party attributions
+            String placeAttribsHtml = "<span>Place details by </span>";
+            String photoAttribsHtml = "<span>Photo by </span>";
+            String licenseHtml = "<span>Licensed by </span>";
 
-            // 1. Building place attributions HTML string
+            // 1. Building place attributions' HTML string
             StringBuilder sb = new StringBuilder(placeAttribsHtml);
             List<String> placeAttribs = place.getAttributions();
 
@@ -704,19 +702,28 @@ public class MapsActivity extends FragmentActivity
                     }
                 }
             } else {
-                sb.append("<span>Unknown</span>");
+                Uri placeWebUri = place.getWebsiteUri();
+
+                if (placeWebUri != null) {
+                    sb.setLength(0);    // Reset the buffer
+                    sb.append("<span data-uri=\"");
+                    sb.append(placeWebUri.toString());
+                    sb.append("\">More place details clicking this window<span>");
+                } else {
+                    sb.append("<span>an unknown Google user</span>");
+                }
             }
 
             placeAttribsHtml = sb.toString();
             sb.setLength(0);    // Clears the buffer
 
-            // 2. Building photo attributions HTML string
+            // 2. Building photo attributions' HTML string
             sb.append(photoAttribsHtml);
 
             if (photoAttribs != null) {
                 sb.append(photoAttribs);
             } else {
-                sb.append("<span>Unknown</span>");
+                sb.append("<span>an unknown Google user</span>");
             }
 
             photoAttribsHtml = sb.toString();
@@ -741,7 +748,7 @@ public class MapsActivity extends FragmentActivity
             // PHOTOS -> Bind them with the marker in a member map,
             //      so we can retrieve it in the InfoWindowAdapter
             if (photo != null) {
-                mMarkersWithPhoto.put(marker, photo);
+                mViewModel.attachPhotoToMarker(marker, photo);
             }
         } else {
             Log.e(MAPS_LOG_TAG,
@@ -846,7 +853,7 @@ public class MapsActivity extends FragmentActivity
             marker.hideInfoWindow();
         }
 
-        mLastSelectedMarker = marker;
+        mViewModel.updateSelectedMarker(marker);
 
         // We return false to indicate that we have not consumed the event
         // and that we wish for the default behavior to occur
@@ -868,19 +875,21 @@ public class MapsActivity extends FragmentActivity
         Map<String, String> attributions = (Map<String, String>) marker.getTag();
 
         if (attributions != null) {
-            // Get the raw HTML string from the HashMap
-            String photoAttribs = attributions.get("photo");
+            // Extract the links from the place attributions
+            String atrribs = attributions.get("place");
+            List<String> links = this.extractLinks(atrribs);
 
-            // Extract the links from the text
-            List<String> links = this.extractLinks(photoAttribs);
-
-            if (links != null && !links.isEmpty()) {
-                Uri photoAttribUri = Uri.parse(links.get(0));
-
-                // Launch a intent to browse the link
-                Intent intent = new Intent(Intent.ACTION_VIEW, photoAttribUri);
-                this.startActivity(intent);
+            // If no place links, then use photo links
+            if (links == null || links.isEmpty()) {
+                atrribs = attributions.get("photo");
+                links = this.extractLinks(atrribs);
             }
+
+            Uri linkUri = Uri.parse(links.get(0));
+
+            // Launch a intent to browse the link
+            Intent intent = new Intent(Intent.ACTION_VIEW, linkUri);
+            this.startActivity(intent);
         }
     }
 
@@ -953,7 +962,7 @@ public class MapsActivity extends FragmentActivity
             TextView txtLicense = infoContents.findViewById(R.id.txtLicense);
 
             // Retrieve the photo from our custom map
-            Bitmap poiPhoto = mMarkersWithPhoto.get(marker);
+            Bitmap poiPhoto = mViewModel.getPhoto(marker);
 
             // Retrieve the attributions from the 'tag' property
             @SuppressWarnings("unchecked")

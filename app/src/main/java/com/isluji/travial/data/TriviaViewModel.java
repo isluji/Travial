@@ -2,8 +2,10 @@ package com.isluji.travial.data;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.maps.model.Marker;
 import com.isluji.travial.R;
 import com.isluji.travial.model.trivias.Answer;
 import com.isluji.travial.model.trivias.QuestionWithAnswers;
@@ -11,7 +13,9 @@ import com.isluji.travial.model.trivias.Result;
 import com.isluji.travial.model.trivias.TriviaWithQuestions;
 import com.isluji.travial.model.User;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -29,17 +33,19 @@ public class TriviaViewModel extends AndroidViewModel {
 
     private int mSelectedTriviaPosition;
 
-    /*public final*/ LiveData<List<TriviaWithQuestions>> mUserTrivias;
+    // TODO: public final?
+    private LiveData<List<TriviaWithQuestions>> mUserTrivias;
 //    public final LiveData<List<QuestionWithAnswers>> mQuestionsList;
 //    public final LiveData<List<Result>> mUserResults;
+
 
     public TriviaViewModel(Application app) {
         super(app);
 
         mRepository = new TriviaRepository(app);
-
         mSelectedTriviaPosition = 0;
     }
+
 
     public int getSelectedTriviaPosition() {
         return mSelectedTriviaPosition;
@@ -73,7 +79,6 @@ public class TriviaViewModel extends AndroidViewModel {
 
     // -------------------------------------------------------
 
-    // TODO: mUserTrivias, mUserResults
     public TriviaWithQuestions getSelectedTrivia() {
         TriviaWithQuestions twq = null;
 
