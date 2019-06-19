@@ -46,7 +46,7 @@ public class MapsViewModel extends AndroidViewModel {
     }
 
 
-    // ***** Wrapper methods *****
+    // ************ Wrapper methods **************
     // (they completely hide the implementation from the UI)
 
     public LiveData<List<String>> getAllPoiIds() {
@@ -82,7 +82,7 @@ public class MapsViewModel extends AndroidViewModel {
     }
 
 
-    // ---------- Implemented methods ------------
+    // ---------- Custom methods ------------
 
     // Returns the most probable current POI
     // and null if the user isn't located in a POI

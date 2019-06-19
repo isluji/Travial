@@ -1,6 +1,7 @@
 package com.isluji.travial.adapters;
 
 import android.content.res.Resources;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.isluji.travial.R;
-import com.isluji.travial.ui.TriviaListFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.ui.fragments.TriviaListFragment.OnListFragmentInteractionListener;
 import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.Collections;
@@ -66,15 +67,18 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Tr
     public void onBindViewHolder(final TriviaViewHolder holder, int position) {
         // Only obtain the current trivia when
         // the list isn't empty and it's not the footer item
+        Log.v("trivia-list-logs", "position: " + position);
+        Log.v("trivia-list-logs", "getItemCount: " + getItemCount());
+
         if ( (getItemCount() > 1) && (getItemViewType(position) == VIEW_TYPE_ITEM) ) {
             holder.mItem = mTriviaList.get(position);
 
-            // TODO: Arreglar esta guarrerida
-            int resId = Resources.getSystem().getIdentifier(
-                    "mipmap-hdpi/ic_launcher.png", "drawable",
-                    Objects.requireNonNull(getClass().getPackage()).getName());
-
-            holder.mImgPoiPhoto.setImageResource(resId);
+//            // TODO: Arreglar esta guarrerida
+//            int resId = Resources.getSystem().getIdentifier(
+//                    "mipmap-hdpi/ic_launcher.png", "drawable",
+//                    Objects.requireNonNull(getClass().getPackage()).getName());
+//
+//            holder.mImgPoiPhoto.setImageResource(resId);
 
             holder.mTxtTitle.setText(
                     holder.mItem.getTrivia().getTitle()
@@ -118,8 +122,9 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Tr
         }
     }
 
-    public void setTrivias(List<TriviaWithQuestions> trivias){
+    public void setTrivias(List<TriviaWithQuestions> trivias) {
         mTriviaList = trivias;
+
         this.notifyDataSetChanged();
     }
 

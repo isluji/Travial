@@ -13,5 +13,5 @@
 
     android:name="com.isluji.travial.ui.TriviaListFragment"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-    tools:context=".ui.TriviaListFragment"
+    tools:context=".ui.fragments.TriviaListFragment"
     tools:listitem="@layout/fragment_trivia_item" />

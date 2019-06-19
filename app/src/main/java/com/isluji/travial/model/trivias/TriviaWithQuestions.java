@@ -8,6 +8,7 @@ import android.widget.RadioGroup;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Embedded;
+import androidx.room.Ignore;
 import androidx.room.Relation;
 
 import com.isluji.travial.R;
@@ -24,6 +25,7 @@ public class TriviaWithQuestions {
     @Relation(parentColumn = "id", entityColumn = "trivia_id",
               entity = Question.class)
     private List<QuestionWithAnswers> questions;
+
 
     public TriviaWithQuestions(Trivia trivia) {
         this.trivia = trivia;
@@ -49,7 +51,7 @@ public class TriviaWithQuestions {
     }
 
 
-    /* ******** Implemented methods ******** */
+    /* ******** Custom methods ******** */
 
     public int getId() {
         return this.getTrivia().getId();
@@ -63,16 +65,6 @@ public class TriviaWithQuestions {
         }
 
         return maxScore;
-    }
-
-    public boolean isValidScore(double score) {
-        Log.v("trivia-results", "score: " + score
-                + " | maxScore: " + this.getMaxScore());
-        return ( (score >= 0) && (score <= this.getMaxScore()) );
-    }
-
-    public boolean isPassed(double score) {
-        return (score >= trivia.getPassingScore());
     }
 
     public void storeChoices(RecyclerView rv) {
@@ -93,5 +85,28 @@ public class TriviaWithQuestions {
                 }
             }
         }
+    }
+
+    public boolean isCompleted() {
+        for (QuestionWithAnswers qwa: this.getQuestions()) {
+            if (qwa.getSelectedAnswer() == null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    // -----------------------------------------------
+
+    public boolean isScoreValid(double score) {
+        Log.v("trivia-results", "score: " + score
+                + " | maxScore: " + this.getMaxScore());
+        return ( (score >= 0) && (score <= this.getMaxScore()) );
+    }
+
+    public boolean isScorePassed(double score) {
+        return (score >= trivia.getPassingScore());
     }
 }

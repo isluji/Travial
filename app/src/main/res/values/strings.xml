@@ -139,4 +139,8 @@
     <string name="trivia_list_log">trivia-list-logs</string>
     <string name="trivia_results_log">trivia-results-logs</string>
     <string name="google_maps_log">google-maps-logs</string>
+    <string name="tutorial_title">HOW TO PLAY</string>
+    <string name="tutorial_step1">First, you have to visit one of the available Points of Interest (POIs). When you are there, you can tap on \'Check in POI\' to unlock it.</string>
+    <string name="tutorial_step2">After that, all trivias related to that POI will appear if you tap the \'Play\' button.</string>
+    <string name="tutorial_step3">You can choose the trivia that you prefer and start testing your knowledge. Later on, you can check your previous scores in \'My results\', and compare them with your friends and other people in \'Rankings\'.</string>
 </resources>

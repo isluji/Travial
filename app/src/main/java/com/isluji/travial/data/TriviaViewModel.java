@@ -33,10 +33,8 @@ public class TriviaViewModel extends AndroidViewModel {
 
     private int mSelectedTriviaPosition;
 
-    // TODO: public final?
     private LiveData<List<TriviaWithQuestions>> mUserTrivias;
-//    public final LiveData<List<QuestionWithAnswers>> mQuestionsList;
-//    public final LiveData<List<Result>> mUserResults;
+    private LiveData<List<Result>> mUserResults;
 
 
     public TriviaViewModel(Application app) {
@@ -46,25 +44,24 @@ public class TriviaViewModel extends AndroidViewModel {
         mSelectedTriviaPosition = 0;
     }
 
-
-    public int getSelectedTriviaPosition() {
-        return mSelectedTriviaPosition;
-    }
-
     public void setSelectedTriviaPosition(int mSelectedTrivia) {
         this.mSelectedTriviaPosition = mSelectedTrivia;
     }
 
 
-    // ***** Wrapper methods *****
+    // ************ Wrapper methods **************
     // (they completely hide the implementation from the UI)
 
     public LiveData<List<TriviaWithQuestions>> getUserTrivias(Set<String> userPoiIds) {
-        return mRepository.getUserTrivias(userPoiIds);
+        mUserTrivias = mRepository.getUserTrivias(userPoiIds);
+
+        return mUserTrivias;
     }
 
     public LiveData<List<Result>> getUserResults(String userEmail) {
-        return mRepository.getUserResults(userEmail);
+        mUserResults = mRepository.getUserResults(userEmail);
+
+        return mUserResults;
     }
 
     public long insertResult(Result newResult)

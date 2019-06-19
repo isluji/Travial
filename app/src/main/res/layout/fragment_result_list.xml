@@ -13,5 +13,5 @@
 
     android:name="com.isluji.travial.ui.ResultListFragment"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-    tools:context=".ui.ResultListFragment"
+    tools:context=".ui.fragments.ResultListFragment"
     tools:listitem="@layout/fragment_result_item" />

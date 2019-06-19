@@ -26,9 +26,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import com.appolica.interactiveinfowindow.InfoWindow;
+import com.appolica.interactiveinfowindow.InfoWindowManager;
+import com.appolica.interactiveinfowindow.fragment.MapInfoWindowFragment;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,7 +43,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -88,7 +89,7 @@ public class MapsActivity extends FragmentActivity
     private PlacesClient mPlacesClient;
     private MapsViewModel mViewModel;
 
-
+    MapInfoWindowFragment mMapIwFragment;
 
 
     @Override
@@ -101,19 +102,18 @@ public class MapsActivity extends FragmentActivity
         // Initialize Google Maps & Places SDKs
         this.setUpGoogleAPIs();
 
-//        if (mMap == null) {
-            SupportMapFragment mapFragment = (SupportMapFragment)
-                    this.getSupportFragmentManager().findFragmentById(R.id.map);
+        // Request the map through the mapFragment
+         mMapIwFragment = (MapInfoWindowFragment)
+                this.getSupportFragmentManager()
+                        .findFragmentById(R.id.infoWindowMap);
 
-            // TODO? new OnMapAndViewReadyListener(mapFragment, this);
-
-            if (mapFragment != null) {
-                mapFragment.getMapAsync(this);
-            } else {
-                Log.e(MAPS_LOG_TAG,
-                        "Error getting mapFragment");
-            }
-//        }
+        if (mMapIwFragment != null) {
+            // Get the GoogleMap object asynchronously from our fragment.
+            mMapIwFragment.getMapAsync(this);
+        } else {
+            Log.e(MAPS_LOG_TAG,
+                    "Error getting MapInfoWindowFragment");
+        }
 
         // Get a new or existing ViewModel from the ViewModelProvider.
         mViewModel = ViewModelProviders.of(this).get(MapsViewModel.class);
@@ -157,28 +157,24 @@ public class MapsActivity extends FragmentActivity
         // Zoom level 15 -> Streets
         mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
 
-        // ---------- Event listeners ----------
+        // "Check in" button click listener
+        Button btnCheckInPoi = this.findViewById(R.id.btnCheckInPoi);
+        btnCheckInPoi.setOnClickListener(v -> checkInPoi());
 
-        // Observer for changes of AllPoiIds from the DB
-        mViewModel.getAllPoiIds().observe(this, new Observer<List<String>>() {
-            @Override
-            public void onChanged(@Nullable final List<String> poiIds) {
-                Log.v(MAPS_LOG_TAG,
-                        "Cargados POI IDs de la BD");
+        // ******** LiveData Observer ********
 
+        mViewModel.getAllPoiIds().observe(this,
+            poiIds -> {
                 if (poiIds != null) {
+                    Log.v(MAPS_LOG_TAG, "MapsActivity: PoI IDs loaded from BD");
+
                     for (String poiId : poiIds) {
-                        // Add a marker in the POI location
-                        // Update the set of POIs in the ViewModel
-                        addPoiToMap(poiId);
+                        // Adds a marker in the POI location and updates the ViewModel
+                        this.addPoiToMap(poiId);
                     }
                 }
             }
-        });
-
-        // "Check in" button
-        Button btnCheckInPoi = this.findViewById(R.id.btnCheckInPoi);
-        btnCheckInPoi.setOnClickListener(v -> checkInPoi());
+        );
     }
 
     @Override
@@ -623,19 +619,18 @@ public class MapsActivity extends FragmentActivity
 
     /** Add a marker in the given Place */
     private void addPoiMarker(Place place, @Nullable Bitmap photo, @Nullable String photoAttribs, boolean unlocked) {
-        Log.v(getString(R.string.google_maps_log),
-                "---------------------------------------");
-
-        Log.v(getString(R.string.google_maps_log),
-                "Place: " + place.getName());
-        Log.v(getString(R.string.google_maps_log),
-                "Third-party attribs: " + place.getAttributions());
+//        Log.v(getString(R.string.google_maps_log),
+//                "---------------------------------------");
+//        Log.v(getString(R.string.google_maps_log),
+//                "Place: " + place.getName());
+//        Log.v(getString(R.string.google_maps_log),
+//                "Third-party attribs: " + place.getAttributions());
 //        Log.v(getString(R.string.google_maps_log),
 //                "Photo: " + photo);
 //        Log.v(getString(R.string.google_maps_log),
 //                "Photo attribs: " + photoAttribs);
-        Log.v(getString(R.string.google_maps_log),
-                "Website URI: " + place.getWebsiteUri());
+//        Log.v(getString(R.string.google_maps_log),
+//                "Website URI: " + place.getWebsiteUri());
 //        Log.v(getString(R.string.google_maps_log),
 //                "Unlocked: " + unlocked);
 
@@ -745,6 +740,9 @@ public class MapsActivity extends FragmentActivity
 
             marker.setTag(attributions);
 
+            // TODO: InteractiveInfoWindowAndroid functionality
+            this.toggleInfoWindow(marker, 0, 0, false);
+
             // PHOTOS -> Bind them with the marker in a member map,
             //      so we can retrieve it in the InfoWindowAdapter
             if (photo != null) {
@@ -754,6 +752,40 @@ public class MapsActivity extends FragmentActivity
             Log.e(MAPS_LOG_TAG,
                     String.format("Error adding marker in '%s': No LatLng found",
                             place.getName()));
+        }
+    }
+
+    private void toggleInfoWindow(Marker marker, int offsetX, int offsetY, boolean enableOffsetX) {
+//        // Request the map through the mapFragment
+//        MapInfoWindowFragment mMapIwFragment = (MapInfoWindowFragment)
+//                this.getSupportFragmentManager()
+//                        .findFragmentById(R.id.infoWindowMap);
+
+        if (mMapIwFragment != null) {
+            // NOTE 1) If you want to use dp offsets,
+            // you should convert the values to px by yourself.
+            // The constructor expects absolute pixel values.
+            // TODO: Convert dp values to px
+
+            // Create marker specification by providing InfoWindow's
+            // x and y offsets from marker's screen location.
+            InfoWindow.MarkerSpecification markerSpec =
+                    new InfoWindow.MarkerSpecification(offsetX, offsetY);
+
+            // NOTE 2) By default offsetX will be ignored,
+            // so if you want it to take effect:
+            if (enableOffsetX) {
+                markerSpec.setCenterByX(false);
+            }
+
+            // Creates an interactive InfoWindow with the given specs.
+            InfoWindow infoWindow = new InfoWindow(marker, markerSpec, mMapIwFragment);
+
+            // Get an instance of InfoWindowManager to control our InfoWindow.
+            InfoWindowManager iwManager = mMapIwFragment.infoWindowManager();
+
+            // Shows the InfoWindow or hides it if it is already opened.
+//            iwManager.toggle(infoWindow, true);
         }
     }
 
@@ -919,7 +951,34 @@ public class MapsActivity extends FragmentActivity
     }
 
 
-    /** Demonstrates customizing the info window and/or its contents. */
+    // ------------- Inner classes and listeners -----------------
+
+    /** Listen when an InfoWindow is hiding or showing **/
+    private InfoWindowManager.WindowShowListener windowShowListener =
+            new InfoWindowManager.WindowShowListener() {
+                @Override
+                public void onWindowShowStarted(@NonNull InfoWindow infoWindow) {
+
+                }
+
+                @Override
+                public void onWindowShown(@NonNull InfoWindow infoWindow) {
+
+                }
+
+                @Override
+                public void onWindowHideStarted(@NonNull InfoWindow infoWindow) {
+
+                }
+
+                @Override
+                public void onWindowHidden(@NonNull InfoWindow infoWindow) {
+
+                }
+            };
+
+
+    /** Demonstrates customizing the InfoWindow and/or its contents. */
     class PoiInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         // These are both ViewGroups containing an ImageView with id "imgPhoto"
@@ -933,7 +992,7 @@ public class MapsActivity extends FragmentActivity
 //                            findViewById(R.id.map), false);
             mContents = getLayoutInflater()
                     .inflate(R.layout.photo_info_window,
-                            findViewById(R.id.map), false);
+                            findViewById(R.id.infoWindowMap), false);
         }
 
         // Provide a view that will be used for the entire info window.

@@ -1,16 +1,15 @@
-package com.isluji.travial.ui;
+package com.isluji.travial.ui.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,10 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.TriviaListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -34,7 +31,9 @@ import java.util.Set;
 public class TriviaListFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
+
     private TriviaViewModel mViewModel;
+    private RecyclerView mRecyclerView;
 
     /**
      * Use this factory method to create a new instance of
@@ -64,37 +63,42 @@ public class TriviaListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_trivia_list, container, false);
 
-        /* ***** RecyclerView and Adapter code ***** */
-
         if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            /* ***** RecyclerView and Adapter code ***** */
 
-            final TriviaListAdapter adapter = new TriviaListAdapter(mListener);
-            recyclerView.setAdapter(adapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            mRecyclerView = (RecyclerView) view;
 
             // Get the shared ViewModel between MainActivity and its fragments
             mViewModel = ViewModelProviders
                     .of(Objects.requireNonNull(this.getActivity()))
                     .get(TriviaViewModel.class);
 
+            // Create an adapter and a layout manager for the RecyclerView
+            final TriviaListAdapter adapter = new TriviaListAdapter(mListener);
+            final LinearLayoutManager layoutManager =
+                    new LinearLayoutManager(mRecyclerView.getContext());
+
+            mRecyclerView.setAdapter(adapter);
+            mRecyclerView.setLayoutManager(layoutManager);
+
+            // Get the user's PoI IDs, needed to query the user's trivias
             SharedPreferences sharedPrefs = PreferenceManager
                     .getDefaultSharedPreferences(this.getActivity().getApplicationContext());
 
             Set<String> userPoiIds = sharedPrefs
                     .getStringSet("user_poi_ids", new LinkedHashSet<>());
 
-            // Add an observer on the LiveData returned by getAllTrivias.
-            // The onChanged() method fires when the observed data changes
-            // and the activity is in the foreground.
-            mViewModel.getUserTrivias(userPoiIds).observe(this, new Observer<List<TriviaWithQuestions>>() {
-                @Override
-                public void onChanged(@Nullable final List<TriviaWithQuestions> trivias) {
+            // ******** LiveData Observer ********
+
+            mViewModel.getUserTrivias(userPoiIds).observe(this,
+                trivias -> {
                     // Update the cached copy of the trivias in the adapter.
                     adapter.setTrivias(trivias);
+
+                    Log.v(getString(R.string.trivia_list_log),
+                            "TriviaListFragment: User trivias loaded from BD");
                 }
-            });
+            );
         }
 
         return view;

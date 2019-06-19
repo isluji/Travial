@@ -25,7 +25,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -50,11 +49,14 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.people.v1.PeopleService;
 import com.isluji.travial.R;
 import com.isluji.travial.data.TriviaViewModel;
-import com.isluji.travial.misc.TriviaUtils;
 import com.isluji.travial.model.trivias.QuestionWithAnswers;
 import com.isluji.travial.model.trivias.Result;
-import com.isluji.travial.model.trivias.TriviaWithQuestions;
 import com.isluji.travial.model.User;
+import com.isluji.travial.ui.fragments.ResultFragment;
+import com.isluji.travial.ui.fragments.ResultListFragment;
+import com.isluji.travial.ui.fragments.TriviaFragment;
+import com.isluji.travial.ui.fragments.TriviaListFragment;
+import com.isluji.travial.ui.fragments.TutorialFragment;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 import com.squareup.picasso.Picasso;
 
@@ -62,7 +64,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
@@ -328,35 +329,18 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onSendButtonClicked(View view) {
-        RecyclerView rvQuestions = view.getRootView().findViewById(R.id.rvQuestions);
-        List<View> rgAnswers = TriviaUtils.getViewsByTag(rvQuestions, getString(R.string.rg_answers_tag));
+        TriviaFragment triviaFragment = (TriviaFragment) this
+                .getSupportFragmentManager()
+                .findFragmentByTag("trivia_fragment");
 
-        boolean notCompleted = false;
-
-        for (View v: rgAnswers) {
-            RadioGroup rg = (RadioGroup) v;
-
-            // Upon empty selection, the returned value is -1
-            if (rg.getCheckedRadioButtonId() == -1) {
-                rg.setBackgroundColor(Color.RED);
-
-                notCompleted = true;
-            }
+        if (triviaFragment != null) {
+            triviaFragment.setMarkUnanswered(true);
         }
 
-        if (notCompleted) {
-            String message = "You must answer to all the questions";
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        } else {
-//            TriviaWithQuestions twq = mViewModel.getSelectedTrivia();
-//
-//            // Set the 'selected' field of all the answers to true or false
-//            twq.storeChoices(rvQuestions);
-//
-//            this.loadTriviaResultFragment();
-        }
-
-
+//        if (notCompleted) {
+//            String message = "You must answer to all the questions";
+//            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+//        }
     }
 
     public void onResetButtonClicked(View view) {

@@ -1,5 +1,6 @@
 package com.isluji.travial.adapters;
 
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.isluji.travial.R;
 import com.isluji.travial.model.trivias.QuestionWithAnswers;
-import com.isluji.travial.ui.TriviaFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.ui.fragments.TriviaFragment.OnListFragmentInteractionListener;
 import com.isluji.travial.model.trivias.Answer;
-import com.isluji.travial.model.trivias.TriviaWithQuestions;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,14 +36,20 @@ public class QuestionListAdapter
 
     // Cached copy of the questions
     private List<QuestionWithAnswers> mQuestionList;
-    // Cached copy of the selected Trivia with its Questions
-    private TriviaWithQuestions mSelectedTrivia;
+
+    // Specifies if we have to mark the unanswered questions
+    private boolean mMarkUnanswered;
+    private boolean mTriviaCompleted;
+
 
     public QuestionListAdapter() {
         super(DIFF_CALLBACK);
 
         mQuestionList = Collections.emptyList();
-//        mSelectedTrivia = new TriviaWithQuestions(null);
+
+        // We only want to mark them once the user has sent his choices
+        mMarkUnanswered = false;
+        mTriviaCompleted = true;
     }
 
 
@@ -90,35 +96,56 @@ public class QuestionListAdapter
                     String.valueOf(holder.mItem.getQuestion().getScore())
             );
 
-            RadioButton option1 = (RadioButton) holder.mRgAnswers.getChildAt(0);
-            RadioButton option2 = (RadioButton) holder.mRgAnswers.getChildAt(1);
-            RadioButton option3 = (RadioButton) holder.mRgAnswers.getChildAt(2);
+            int answerCount = holder.mRgAnswers.getChildCount();
+            List<Answer> answers = holder.mItem.getAnswers();
 
-            Answer answer1 = holder.mItem.getAnswers().get(0);
-            Answer answer2 = holder.mItem.getAnswers().get(1);
-            Answer answer3 = holder.mItem.getAnswers().get(2);
+            holder.mRgAnswers.clearCheck();
 
-            option1.setText(answer1.getText());
-            option2.setText(answer2.getText());
-            option3.setText(answer3.getText());
+            boolean answered = false;
 
-//            option1.setChecked(answer1.isSelected());
-//            option2.setChecked(answer2.isSelected());
-//            option3.setChecked(answer3.isSelected());
+            // (Implemented taking into account that
+            // the order of the answers never change)
+            for (int i = 0; i < answerCount; i++) {
+                Answer answer = answers.get(i);
+                RadioButton rb = (RadioButton) holder.mRgAnswers.getChildAt(i);
 
-            holder.mRgAnswers.setOnCheckedChangeListener((group, checkedId) -> {
-                RadioButton selectedRb = group.findViewById(checkedId);
-
-                for (Answer answer: holder.mItem.getAnswers()) {
-                    if (selectedRb.getText().equals(answer.getText())) {
-                        answer.setSelected(true);
-                    } else {
-                        answer.setSelected(false);
-                    }
+                if (answer.isSelected()) {
+                    answered = true;
                 }
 
-                Log.v("trivia-result-logs", "New selected answer: "
-                        + holder.mItem.getSelectedAnswer().getText());
+                // Set the text for the question and
+                // check the answer specified as 'selected' in the data object
+                rb.setChecked(answer.isSelected());
+                rb.setText(answer.getText());
+            }
+
+            // If there's at least an unanswered question,
+            // the trivia hasn't been completed, and we should mark
+            // these questions with a special color/background.
+            if (!answered) {
+                mTriviaCompleted = false;
+
+                if (mMarkUnanswered) {
+                    holder.mRgAnswers.setBackgroundColor(Color.MAGENTA);
+                }
+            }
+
+            // RadioGroup checked option change listener
+            // (we want it to update the 'selected' in the data)
+            holder.mRgAnswers.setOnCheckedChangeListener((group, checkedId) -> {
+                RadioButton selectedRb = group.findViewById(checkedId);
+                int selectedIndex = group.indexOfChild(selectedRb);
+
+                // (Implemented taking into account that
+                // the order of the answers never change)
+                for (int i = 0; i < answerCount; i++) {
+                    answers.get(i).setSelected(i == selectedIndex);
+                }
+
+                if (holder.mItem.getSelectedAnswer() != null) {
+                    Log.v("trivia-result-logs", "New selected answer: "
+                            + holder.mItem.getSelectedAnswer().getText());
+                }
             });
         }
     }
@@ -148,6 +175,7 @@ public class QuestionListAdapter
 
     public void setQuestions(List<QuestionWithAnswers> questions) {
         mQuestionList = questions;
+
         this.notifyDataSetChanged();
     }
 
@@ -163,8 +191,19 @@ public class QuestionListAdapter
                 Log.v("trivia-logs", "There was no selected answer");
             }
         }
+
+        this.notifyDataSetChanged();
     }
 
+    public boolean isTriviaCompleted() {
+        return mTriviaCompleted;
+    }
+
+    public void setMarkUnanswered(boolean markUnanswered) {
+        mMarkUnanswered = markUnanswered;
+
+        this.notifyDataSetChanged();
+    }
 
     class QuestionViewHolder extends RecyclerView.ViewHolder {
         private QuestionWithAnswers mItem;

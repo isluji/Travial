@@ -78,7 +78,7 @@ public class Answer {
     }
 
 
-    /* ******** Implemented methods ******** */
+    /* ******** Custom methods ******** */
 
     @Override
     public boolean equals(@Nullable Object obj) {

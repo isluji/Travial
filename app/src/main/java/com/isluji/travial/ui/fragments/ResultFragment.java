@@ -1,4 +1,4 @@
-package com.isluji.travial.ui;
+package com.isluji.travial.ui.fragments;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
@@ -78,9 +78,9 @@ public class ResultFragment extends Fragment {
         // Show a different screen whether the user passes or fails the test
         int scoreId, messageId, imgId, colorId;
 
-        if (twq.isValidScore(result.getScore())) {
+        if (twq.isScoreValid(result.getScore())) {
 
-            if (twq.isPassed(result.getScore())) {
+            if (twq.isScorePassed(result.getScore())) {
                 colorId = Color.GREEN;
                 scoreId = R.string.trivia_result_passed;
                 messageId = R.string.trivia_result_message_passed;

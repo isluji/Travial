@@ -36,7 +36,7 @@ public class QuestionWithAnswers {
     }
 
 
-    /* ******** Implemented methods ******** */
+    /* ******** Custom methods ******** */
 
     public int getId() {
         return this.getQuestion().getId();

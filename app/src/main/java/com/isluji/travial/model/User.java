@@ -88,7 +88,7 @@ public class User {
     }
 
 
-    /** Implemented methods */
+    // ------------ Custom methods -------------
 
     public boolean hasCompletedAnyTrivia() {
         return false; // TODO

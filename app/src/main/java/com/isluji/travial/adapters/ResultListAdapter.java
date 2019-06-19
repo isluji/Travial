@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.isluji.travial.R;
 import com.isluji.travial.model.trivias.Result;
-import com.isluji.travial.ui.ResultListFragment.OnListFragmentInteractionListener;
+import com.isluji.travial.ui.fragments.ResultListFragment.OnListFragmentInteractionListener;
 
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +72,7 @@ public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.Vi
 
     public void setResults(List<Result> results) {
         mResultList = results;
+
         this.notifyDataSetChanged();
     }
 

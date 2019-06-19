@@ -1,4 +1,4 @@
-package com.isluji.travial.ui;
+package com.isluji.travial.ui.fragments;
 
 
 import android.os.Bundle;

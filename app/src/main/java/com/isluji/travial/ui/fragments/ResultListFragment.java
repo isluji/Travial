@@ -1,16 +1,15 @@
-package com.isluji.travial.ui;
+package com.isluji.travial.ui.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,7 +19,6 @@ import com.isluji.travial.adapters.ResultListAdapter;
 import com.isluji.travial.data.TriviaViewModel;
 import com.isluji.travial.model.trivias.Result;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -85,16 +83,17 @@ public class ResultListFragment extends Fragment {
             String userEmail = sharedPrefs.getString("user_email",
                     this.getString(R.string.placeholder_user_email));
 
-            // Add an observer on the LiveData returned by getAllTrivias.
-            // The onChanged() method fires when the observed data changes
-            // and the activity is in the foreground.
-            mViewModel.getUserResults(userEmail).observe(this, new Observer<List<Result>>() {
-                @Override
-                public void onChanged(@Nullable final List<Result> userResults) {
+            // ******** LiveData Observer ********
+
+            mViewModel.getUserResults(userEmail).observe(this,
+                userResults -> {
                     // Update the cached copy of the trivias in the adapter.
                     adapter.setResults(userResults);
+
+                    Log.v(getString(R.string.trivia_results_log),
+                            "ResultListFragment: User results loaded from BD");
                 }
-            });
+            );
         }
 
         return view;
