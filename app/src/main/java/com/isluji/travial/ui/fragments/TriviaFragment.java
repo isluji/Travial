@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.isluji.travial.R;
 import com.isluji.travial.adapters.QuestionListAdapter;
@@ -113,11 +114,18 @@ public class TriviaFragment extends Fragment {
         }
     }
 
-    public void setMarkUnanswered(boolean markUnanswered) {
+    public void sendTrivia() {
         QuestionListAdapter adapter = (QuestionListAdapter) mRecyclerView.getAdapter();
 
         if (adapter != null) {
-            adapter.setMarkUnanswered(markUnanswered);
+            adapter.setMarkUnanswered(true);
+
+            if (!adapter.isTriviaCompleted()) {
+                String message = "You must answer to all the questions";
+                Toast.makeText(this.getActivity(), message, Toast.LENGTH_LONG).show();
+            }
+
+            mViewModel.evaluateSelectedTrivia();
         }
     }
 

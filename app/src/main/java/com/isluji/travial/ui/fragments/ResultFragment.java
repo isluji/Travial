@@ -79,7 +79,6 @@ public class ResultFragment extends Fragment {
         int scoreId, messageId, imgId, colorId;
 
         if (twq.isScoreValid(result.getScore())) {
-
             if (twq.isScorePassed(result.getScore())) {
                 colorId = Color.GREEN;
                 scoreId = R.string.trivia_result_passed;

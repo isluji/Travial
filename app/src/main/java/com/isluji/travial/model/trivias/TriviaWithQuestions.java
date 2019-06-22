@@ -58,7 +58,7 @@ public class TriviaWithQuestions {
     }
 
     public double getMaxScore() {
-        int maxScore = 0;
+        double maxScore = 0;
 
         for (QuestionWithAnswers qwa: questions) {
             maxScore += qwa.getQuestion().getScore();
@@ -101,12 +101,14 @@ public class TriviaWithQuestions {
     // -----------------------------------------------
 
     public boolean isScoreValid(double score) {
-        Log.v("trivia-results", "score: " + score
+        Log.v("trivia-result-logs", "score: " + score
                 + " | maxScore: " + this.getMaxScore());
         return ( (score >= 0) && (score <= this.getMaxScore()) );
     }
 
     public boolean isScorePassed(double score) {
+        Log.v("trivia-result-logs", "score: " + score
+                + " | passingScore " + trivia.getPassingScore());
         return (score >= trivia.getPassingScore());
     }
 }

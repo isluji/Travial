@@ -42,8 +42,16 @@ public class QuestionWithAnswers {
         return this.getQuestion().getId();
     }
 
+    public String getStatement() {
+        return this.getQuestion().getStatement();
+    }
+
     public Answer getAnswerAt(int index) {
         return answers.get(index);
+    }
+
+    public int getAnswerCount() {
+        return answers.size();
     }
 
     // Returns null if there's still no answer selected

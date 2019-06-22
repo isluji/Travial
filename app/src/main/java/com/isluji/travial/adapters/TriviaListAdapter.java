@@ -67,18 +67,10 @@ public class TriviaListAdapter extends RecyclerView.Adapter<TriviaListAdapter.Tr
     public void onBindViewHolder(final TriviaViewHolder holder, int position) {
         // Only obtain the current trivia when
         // the list isn't empty and it's not the footer item
-        Log.v("trivia-list-logs", "position: " + position);
-        Log.v("trivia-list-logs", "getItemCount: " + getItemCount());
-
         if ( (getItemCount() > 1) && (getItemViewType(position) == VIEW_TYPE_ITEM) ) {
             holder.mItem = mTriviaList.get(position);
 
-//            // TODO: Arreglar esta guarrerida
-//            int resId = Resources.getSystem().getIdentifier(
-//                    "mipmap-hdpi/ic_launcher.png", "drawable",
-//                    Objects.requireNonNull(getClass().getPackage()).getName());
-//
-//            holder.mImgPoiPhoto.setImageResource(resId);
+            // TODO: Load POI photo in mImgPoiPhoto
 
             holder.mTxtTitle.setText(
                     holder.mItem.getTrivia().getTitle()

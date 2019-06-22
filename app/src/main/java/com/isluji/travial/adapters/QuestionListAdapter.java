@@ -84,6 +84,8 @@ public class QuestionListAdapter
         if ( (getItemCount() > 1) && (getItemViewType(position) == VIEW_TYPE_ITEM) ) {
             holder.mItem = mQuestionList.get(position);
 
+            /* Set values to the TextViews */
+
             holder.mTxtPosition.setText(
                     String.format("%s.", String.valueOf(position + 1))
             );
@@ -96,10 +98,10 @@ public class QuestionListAdapter
                     String.valueOf(holder.mItem.getQuestion().getScore())
             );
 
+            /* Set values for the RadioGroups and RadioButtons */
+
             int answerCount = holder.mRgAnswers.getChildCount();
             List<Answer> answers = holder.mItem.getAnswers();
-
-            holder.mRgAnswers.clearCheck();
 
             boolean answered = false;
 
@@ -126,27 +128,42 @@ public class QuestionListAdapter
                 mTriviaCompleted = false;
 
                 if (mMarkUnanswered) {
-                    holder.mRgAnswers.setBackgroundColor(Color.MAGENTA);
+                    holder.mRgAnswers.setBackgroundColor(
+                            Color.parseColor("#ff7070")); // light red;
+                } else {
+                    holder.mRgAnswers.setBackgroundColor(
+                            Color.parseColor("#ffdd66")); // beige;
                 }
             }
 
             // RadioGroup checked option change listener
             // (we want it to update the 'selected' in the data)
             holder.mRgAnswers.setOnCheckedChangeListener((group, checkedId) -> {
-                RadioButton selectedRb = group.findViewById(checkedId);
-                int selectedIndex = group.indexOfChild(selectedRb);
+                if (group.isShown()) {
+                    RadioButton selectedRb = group.findViewById(checkedId);
+                    int selectedIndex = group.indexOfChild(selectedRb);
 
-                // (Implemented taking into account that
-                // the order of the answers never change)
-                for (int i = 0; i < answerCount; i++) {
-                    answers.get(i).setSelected(i == selectedIndex);
-                }
+                    Log.v("trivia-logs", "selectedIndex: " + selectedIndex);
 
-                if (holder.mItem.getSelectedAnswer() != null) {
-                    Log.v("trivia-result-logs", "New selected answer: "
-                            + holder.mItem.getSelectedAnswer().getText());
+                    // (Implemented taking into account that
+                    // the order of the answers never change)
+                    for (int i = 0; i < answerCount; i++) {
+                        Log.v("trivia-logs", "Answer " + (i + 1)
+                                + " -> selected: " + (i == selectedIndex));
+                        Answer answer = answers.get(i);
+                        boolean selected = (i == selectedIndex);
+
+                        answers.get(i).setSelected(selected);
+                    }
+
+                    Log.v("trivia-logs", "After checked change:");
+                    this.printTriviaState();
                 }
             });
+
+            Log.v("trivia-logs",
+                    "After binding question " + (position + 1) + ": ");
+            this.printTriviaState();
         }
     }
 
@@ -173,6 +190,30 @@ public class QuestionListAdapter
         }
     }
 
+    private void printTriviaState() {
+        StringBuilder sb = new StringBuilder("Trivia State: ");
+
+        for (int i = 0; i < mQuestionList.size(); i++) {
+            QuestionWithAnswers qwa = mQuestionList.get(i);
+
+            sb.append("Q").append(i+1).append(" -> ");
+
+            for (int j = 0; j < qwa.getAnswerCount(); j++) {
+                Answer answer = qwa.getAnswerAt(j);
+
+                if (answer.isSelected()) {
+                    sb.append(j+1);
+                }
+            }
+
+            if (i < (mQuestionList.size() - 1)) {
+                sb.append(", ");
+            }
+        }
+
+        Log.v("trivia-logs", sb.toString());
+    }
+
     public void setQuestions(List<QuestionWithAnswers> questions) {
         mQuestionList = questions;
 
@@ -181,18 +222,12 @@ public class QuestionListAdapter
 
     public void resetTrivia() {
         for (QuestionWithAnswers qwa: mQuestionList) {
-            Answer selectedAnswer = qwa.getSelectedAnswer();
-
-            if (selectedAnswer != null) {
-                Log.v("trivia-logs", "Unselected answer: "
-                        + selectedAnswer.getText());
-                selectedAnswer.setSelected(false);
-            } else {
-                Log.v("trivia-logs", "There was no selected answer");
+            for (Answer answer : qwa.getAnswers()) {
+                answer.setSelected(false);
             }
         }
 
-        this.notifyDataSetChanged();
+        this.setMarkUnanswered(false);
     }
 
     public boolean isTriviaCompleted() {
@@ -202,9 +237,15 @@ public class QuestionListAdapter
     public void setMarkUnanswered(boolean markUnanswered) {
         mMarkUnanswered = markUnanswered;
 
+        if (!mMarkUnanswered) {
+            mTriviaCompleted = true;
+        }
+
         this.notifyDataSetChanged();
     }
 
+
+    /** -------------- ViewHolder -------------- */
     class QuestionViewHolder extends RecyclerView.ViewHolder {
         private QuestionWithAnswers mItem;
 
